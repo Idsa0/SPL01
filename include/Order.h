@@ -27,6 +27,7 @@ class Order {
         int getDriverId() const;
         OrderStatus getStatus() const;
         const string toString() const;
+        const int getDistance() const; // TODO we added this
 
     private:
         const int id;
@@ -36,3 +37,7 @@ class Order {
         int collectorId; //Initialized to NO_VOLUNTEER if no collector has been assigned yet
         int driverId; //Initialized to NO_VOLUNTEER if no driver has been assigned yet
 };
+
+static Order nullOrder = Order(-1,-1,-1);
+
+// TODO null thing

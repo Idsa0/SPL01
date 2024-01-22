@@ -19,7 +19,9 @@ class Customer {
         int addOrder(int orderId); //return OrderId if order was added successfully, -1 otherwise
 
         virtual Customer *clone() const = 0; // Return a copy of the customer
-
+        virtual ~Customer() = default; // TODO we added this
+        
+        
         
     private:
         const int id;
@@ -47,3 +49,6 @@ class CivilianCustomer: public Customer {
     private:
         
 };
+
+static CivilianCustomer nullCustomer = CivilianCustomer(-1,"nobody",-1,-1);
+// TODO best practices ???
