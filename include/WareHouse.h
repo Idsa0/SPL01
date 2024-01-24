@@ -4,6 +4,7 @@
 
 #include "Order.h"
 #include "Customer.h"
+#include "Volunteer.h"
 
 class BaseAction;
 class Volunteer;

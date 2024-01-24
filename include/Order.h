@@ -28,8 +28,11 @@ class Order {
         OrderStatus getStatus() const;
         const string toString() const;
         const int getDistance() const; // TODO we added this
+        const string toStringCompact() const;// TODO we added this
+        const string statusToString() const;
 
     private:
+        
         const int id;
         const int customerId;
         const int distance;

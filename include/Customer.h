@@ -20,7 +20,7 @@ class Customer {
 
         virtual Customer *clone() const = 0; // Return a copy of the customer
         virtual ~Customer() = default; // TODO we added this
-        
+        virtual string toString() const = 0; // TODO we added this
         
         
     private:
@@ -36,7 +36,7 @@ class SoldierCustomer: public Customer {
     public:
         SoldierCustomer(int id, const string &name, int locationDistance, int maxOrders);
         SoldierCustomer *clone() const override;
-    
+        string toString() const;
     private:
         
 };
@@ -45,6 +45,7 @@ class CivilianCustomer: public Customer {
     public:
         CivilianCustomer(int id, const string &name, int locationDistance, int maxOrders);
         CivilianCustomer *clone() const override;
+        string toString() const;
     
     private:
         

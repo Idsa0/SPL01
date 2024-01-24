@@ -1,8 +1,7 @@
 #include "Order.h"
 
-
 Order::Order(int id, int customerId, int distance) : id(id), customerId(customerId),
-                                                        distance(distance), status(OrderStatus::PENDING), collectorId(NO_VOLUNTEER), driverId(NO_VOLUNTEER) {}
+                                                     distance(distance), status(OrderStatus::PENDING), collectorId(NO_VOLUNTEER), driverId(NO_VOLUNTEER) {}
 
 int Order::getId() const
 {
@@ -44,10 +43,44 @@ OrderStatus Order::getStatus() const
     return status;
 }
 
+const string Order::statusToString() const
+{
+    switch (status)
+    {
+    case OrderStatus::COLLECTING:
+        return "COLLECTING";
+
+    case OrderStatus::PENDING:
+        return "PENDING";
+
+    case OrderStatus::DELIVERING:
+        return "DELIVERING";
+
+    case OrderStatus::COMPLETED:
+        return "COMPLETED";
+    }
+}
 const string Order::toString() const
 {
-    // TODO
-    return "ORDER";
+    string col = (collectorId == -1) ? "None" : std::to_string(collectorId);
+    string drv = (driverId == -1) ? "None" : std::to_string(driverId);
+    string str = "OrderId: " + std::to_string(id) + "\n" +
+                 "OrderStatus: " + statusToString() + "\n" +
+                 "CustomerId: " + std::to_string(customerId) + "\n" +
+                 "CollectorId: " + col + "\n" +
+                 "DriverId: " + drv + "\n";
+
+    return str;
+}
+
+const string Order::toStringCompact() const
+{
+    string str = "OrderId: " + std::to_string(id) + ", " +
+                 "CustomerId: " + std::to_string(customerId) + ", " +
+                 "OrderStatus: " + statusToString() ;
+
+    return str;
+                 
 }
 
 const int Order::getDistance() const

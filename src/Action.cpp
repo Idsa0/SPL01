@@ -1,5 +1,6 @@
 #include "Action.h"
 #include <iostream>
+#include <algorithm>
 
 BaseAction::BaseAction() : errorMsg(), status(ActionStatus::ERROR) {}
 
@@ -18,8 +19,7 @@ void BaseAction::error(string errorMsg)
 {
     this->errorMsg = errorMsg;
     status = ActionStatus::ERROR;
-    // TODO should we change status?
-    // TODO print error msg here?
+    std::cout << errorMsg << std::endl;
 }
 
 string BaseAction::getErrorMsg() const
@@ -27,17 +27,26 @@ string BaseAction::getErrorMsg() const
     return errorMsg;
 }
 
+string BaseAction::actionStatusString() const
+{
+    if (status == ActionStatus::ERROR)
+        return "ERROR";
+
+    return "COMPLETED";
+}
+
 SimulateStep::SimulateStep(int numOfSteps) : BaseAction(), numOfSteps(numOfSteps) {}
 
 void SimulateStep::act(WareHouse &wareHouse)
 {
-    // TODO
 }
 
 std::string SimulateStep::toString() const
 {
-    return "SimulateStep";
-    // TODO
+    string name = "SimulateStep";
+    string args = std::to_string(numOfSteps);
+    string s = actionStatusString();
+    return name + " " + args + " " + s;
 }
 
 SimulateStep *SimulateStep::clone() const
@@ -57,15 +66,34 @@ AddOrder::AddOrder(int id) : BaseAction(), customerId(id) {}
 void AddOrder::act(WareHouse &wareHouse)
 {
     Customer &customer = wareHouse.getCustomer(customerId);
+    if (customer.getId() == -1)
+    {
+        error("Customer does not exist");
+        return;
+    }
+
+    if (!customer.canMakeOrder())
+    {
+        error("Customer has reached max order amount");
+        return;
+    }
 
     Order *order = new Order(wareHouse.getNewOrderId(), customerId, customer.getCustomerDistance());
+
     wareHouse.addOrder(order);
+    if (customer.addOrder(order->getId()) == -1)
+    {
+        std::cout << "FATAL @ AddOrder::Act" << std::endl;
+    }
+    complete();
 }
 
 string AddOrder::toString() const
 {
-    return "AddOrder";
-    // TODO
+    string name = "AddOrder";
+    string args = std::to_string(customerId);
+    string s = actionStatusString();
+    return name + " " + args + " " + s;
 }
 
 AddOrder *AddOrder::clone() const
@@ -78,6 +106,7 @@ AddOrder *AddOrder::clone() const
     return cloned;
 }
 
+// helper function I -> string to CustomerType enum
 CustomerType stringToCustomerType(const string &ct)
 {
     if (ct == "soldier")
@@ -88,6 +117,7 @@ CustomerType stringToCustomerType(const string &ct)
     // TODO "this never results in an error..."
 }
 
+// helper function II -> CustomerType enum to string
 string CustomerTypeToString(CustomerType ct)
 {
     if (ct == CustomerType::Civilian)
@@ -115,6 +145,7 @@ void AddCustomer::act(WareHouse &wareHouse)
     }
 
     wareHouse.addCustomer(customer);
+    complete();
 }
 
 AddCustomer *AddCustomer::clone() const
@@ -131,8 +162,10 @@ AddCustomer *AddCustomer::clone() const
 
 string AddCustomer::toString() const
 {
-    return "AddCustomer";
-    // TODO
+    string name = "AddCustomer";
+    string args = customerName + " " + CustomerTypeToString(customerType) + " " + std::to_string(distance) + " " + std::to_string(maxOrders);
+    string s = actionStatusString();
+    return name + " " + args + " " + s;
 }
 
 PrintOrderStatus::PrintOrderStatus(int id) : BaseAction(), orderId(id)
@@ -141,7 +174,16 @@ PrintOrderStatus::PrintOrderStatus(int id) : BaseAction(), orderId(id)
 
 void PrintOrderStatus::act(WareHouse &wareHouse)
 {
-    // TODO
+    Order &order = wareHouse.getOrder(orderId);
+    if (order.getId() == -1)
+    {
+        error("Order doesn’t exist");
+        return;
+    }
+
+    // TODO do we have to have a ref here?
+    std::cout << order.toString() << std::endl;
+    complete();
 }
 
 PrintOrderStatus *PrintOrderStatus::clone() const
@@ -156,7 +198,10 @@ PrintOrderStatus *PrintOrderStatus::clone() const
 
 string PrintOrderStatus::toString() const
 {
-    // TODO
+    string name = "PrintOrderStatus";
+    string args = std::to_string(orderId);
+    string s = actionStatusString();
+    return name + " " + args + " " + s;
 }
 
 PrintCustomerStatus::PrintCustomerStatus(int customerId) : BaseAction(), customerId(customerId)
@@ -165,7 +210,24 @@ PrintCustomerStatus::PrintCustomerStatus(int customerId) : BaseAction(), custome
 
 void PrintCustomerStatus::act(WareHouse &wareHouse)
 {
-    // TODO
+    Customer &customer = wareHouse.getCustomer(customerId);
+    // TODO do we have to have a ref here?
+    if (customer.getId() == -1)
+    {
+        error("Customer doesn’t exist");
+        return;
+    }
+    string str = "CustomerID: " + std::to_string(customerId) + "\n";
+    vector<int> orders = customer.getOrdersIds();
+    for (int i : orders)
+        {
+            str += "OrderID: " + std::to_string(i) +"\n";
+            str += wareHouse.getOrder(i).statusToString() + "\n";
+        }
+    str += "numOrdersLeft: " + std::to_string(customer.getMaxOrders() - customer.getNumOrders());
+
+    std::cout << str << std::endl;
+    complete();
 }
 
 PrintCustomerStatus *PrintCustomerStatus::clone() const
@@ -180,14 +242,25 @@ PrintCustomerStatus *PrintCustomerStatus::clone() const
 
 string PrintCustomerStatus::toString() const
 {
-    // TODO
+    string name = "PrintCustomerStatus";
+    string args = std::to_string(customerId);
+    string s = actionStatusString();
+    return name + " " + args + " " + s;
 }
 
 PrintVolunteerStatus::PrintVolunteerStatus(int id) : BaseAction(), volunteerId(id) {}
 
 void PrintVolunteerStatus::act(WareHouse &wareHouse)
 {
-    // TODO
+    Volunteer &vol = wareHouse.getVolunteer(volunteerId);
+    // TODO do we have to have a ref here?
+    if (vol.getId() == -1)
+    {
+        error("Volunteer doesn’t exist");
+        return;
+    }
+    std::cout << vol.toString() << std::endl;
+    complete();
 }
 
 PrintVolunteerStatus *PrintVolunteerStatus::clone() const
@@ -202,14 +275,21 @@ PrintVolunteerStatus *PrintVolunteerStatus::clone() const
 
 string PrintVolunteerStatus::toString() const
 {
-    // TODO
+    string name = "PrintVolunteerStatus";
+    string args = std::to_string(volunteerId);
+    string s = actionStatusString();
+    return name + " " + args + " " + s;
 }
 
 PrintActionsLog::PrintActionsLog() : BaseAction() {}
 
 void PrintActionsLog::act(WareHouse &wareHouse)
 {
-    // TODO
+    const std::vector<BaseAction *> &actions = wareHouse.getActions();
+    for (BaseAction *action : actions)
+        std::cout << action->toString() << std::endl;
+
+    complete();
 }
 
 PrintActionsLog *PrintActionsLog::clone() const
@@ -224,7 +304,9 @@ PrintActionsLog *PrintActionsLog::clone() const
 
 string PrintActionsLog::toString() const
 {
-    // TODO
+    string name = "PrintActionsLog";
+    string s = actionStatusString();
+    return name + " " + s;
 }
 
 Close::Close() : BaseAction() {}
@@ -233,9 +315,11 @@ void Close::act(WareHouse &wareHouse)
 {
     int max = wareHouse.getNewOrderId();
     for (int i = 0; i < max; i++)
-        std::cout << wareHouse.getOrder(i).toString() << std::endl;
+        std::cout << wareHouse.getOrder(i).toStringCompact() << std::endl;
+    std::cout << std::endl;
     // TODO is this the string we want?
     wareHouse.close();
+    complete();
 }
 
 Close *Close::clone() const
@@ -250,7 +334,9 @@ Close *Close::clone() const
 
 string Close::toString() const
 {
-    // TODO
+    string name = "Close";
+    string s = actionStatusString();
+    return name + " " + s;
 }
 
 BackupWareHouse::BackupWareHouse() : BaseAction() {}
@@ -262,6 +348,7 @@ void BackupWareHouse::act(WareHouse &wareHouse)
         delete backup;
 
     backup = wareHouse.clone();
+    complete();
 }
 
 BackupWareHouse *BackupWareHouse::clone() const
@@ -277,7 +364,9 @@ BackupWareHouse *BackupWareHouse::clone() const
 
 string BackupWareHouse::toString() const
 {
-    // TODO
+    string name = "BackupWareHouse";
+    string s = actionStatusString();
+    return name + " " + s;
 }
 
 RestoreWareHouse::RestoreWareHouse() : BaseAction()
@@ -301,5 +390,7 @@ RestoreWareHouse *RestoreWareHouse::clone() const
 
 string RestoreWareHouse::toString() const
 {
-    // TODO
+    string name = "RestoreWareHouse";
+    string s = actionStatusString();
+    return name + " " + s;
 }

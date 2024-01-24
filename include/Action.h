@@ -25,6 +25,7 @@ public:
     virtual void act(WareHouse &wareHouse) = 0;
     virtual string toString() const = 0;
     virtual BaseAction *clone() const = 0;
+    string actionStatusString() const;
 
 protected:
     void complete();
