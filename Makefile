@@ -1,6 +1,6 @@
 all: build
 
-build: clean  bin/Order.o bin/Customer.o bin/Volunteer.o bin/WareHouse.o bin/Action.o
+build: clean  bin/Order.o bin/Customer.o bin/Volunteer.o bin/WareHouse.o bin/Action.o bin/InputHandler.o
 
 bin/Order.o: src/Order.cpp
 	g++ -g -Wall -Weffc++ -std=c++11 -c -Iinclude -o bin/Order.o src/Order.cpp
@@ -16,6 +16,9 @@ bin/WareHouse.o: src/WareHouse.cpp
 
 bin/Action.o: src/Action.cpp
 	g++ -g -Wall -Weffc++ -std=c++11 -c -Iinclude -o bin/Action.o src/Action.cpp
+	
+bin/InputHandler.o: src/InputHandler.cpp
+	g++ -g -Wall -Weffc++ -std=c++11 -c -Iinclude -o bin/InputHandler.o src/InputHandler.cpp
 
 clean:
 	rm -f bin/*
