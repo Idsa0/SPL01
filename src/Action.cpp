@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
-BaseAction::BaseAction() : errorMsg(), status(ActionStatus::ERROR) {}
+BaseAction::BaseAction() : errorMsg(), status(ActionStatus::ERROR), isNull(false) {}
 
 ActionStatus BaseAction::getStatus() const
 {
@@ -35,6 +35,7 @@ string BaseAction::actionStatusString() const
     return "COMPLETED";
 }
 
+
 SimulateStep::SimulateStep(int numOfSteps) : BaseAction(), numOfSteps(numOfSteps) {}
 
 void SimulateStep::act(WareHouse &wareHouse)
@@ -61,7 +62,12 @@ SimulateStep *SimulateStep::clone() const
     // TODO clone methods are highly likely to cause bugs, putting this todo only here to reduce todos
 }
 
-AddOrder::AddOrder(int id) : BaseAction(), customerId(id) {}
+
+
+AddOrder::AddOrder(int id) : BaseAction(), customerId(id) {
+	if (customerId == -1)
+		isNull = true;
+	}
 
 void AddOrder::act(WareHouse &wareHouse)
 {
@@ -87,6 +93,7 @@ void AddOrder::act(WareHouse &wareHouse)
     }
     complete();
 }
+
 
 string AddOrder::toString() const
 {

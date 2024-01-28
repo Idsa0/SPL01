@@ -5,6 +5,8 @@
 #include "Order.h"
 #include "Customer.h"
 #include "Volunteer.h"
+#include <fstream>
+#include <iostream>
 
 class BaseAction;
 class Volunteer;
@@ -21,6 +23,7 @@ class WareHouse {
         void addOrder(Order* order);
         void addAction(BaseAction* action);
         void addCustomer(Customer* customer);
+        void addVolunteer(Volunteer* volunteer);
         Customer &getCustomer(int customerId) const;
         Volunteer &getVolunteer(int volunteerId) const;
         Order &getOrder(int orderId) const;
@@ -32,6 +35,7 @@ class WareHouse {
         int getNewOrderId(); // TODO we added this
         ~WareHouse(); // TODO rule of 3/5
         WareHouse *clone() const;
+        
 
     private:
         bool isOpen;
@@ -44,4 +48,5 @@ class WareHouse {
         int customerCounter; //For assigning unique customer IDs
         int volunteerCounter; //For assigning unique volunteer IDs
         int orderCounter; // TODO we added this
+        void buildFromConfigurationFile(const std::string &path); // TODO we added this
 };

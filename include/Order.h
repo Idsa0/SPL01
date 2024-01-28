@@ -30,6 +30,7 @@ class Order {
         const int getDistance() const; // TODO we added this
         const string toStringCompact() const;// TODO we added this
         const string statusToString() const;
+        Order *clone() const;
 
     private:
         
