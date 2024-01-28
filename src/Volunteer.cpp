@@ -1,4 +1,5 @@
 #include "Volunteer.h"
+#include <iostream>
 
 Volunteer::Volunteer(int id, const string &name) : id(id), name(name), completedOrderId(NO_ORDER), activeOrderId(NO_ORDER) {}
 
@@ -22,14 +23,26 @@ int Volunteer::getCompletedOrderId() const
     return completedOrderId;
 }
 
-bool Volunteer::isBusy() const // Signal whether the volunteer is currently processing an order
+bool Volunteer::isBusy() const
 {
     return activeOrderId != NO_ORDER;
-    // TODO this is sketchy
 }
 
-CollectorVolunteer::CollectorVolunteer(int id, const string &name, int coolDown) : Volunteer(id, name), coolDown(coolDown), timeLeft(0) {}
-// TODO initialized timeLeft to 0 is it ok?
+void Volunteer::setCompletedOrderId(int id)
+{
+    completedOrderId = id;
+}
+
+void Volunteer::finishOrder()
+{
+    completedOrderId = activeOrderId;
+    activeOrderId = NO_ORDER;
+}
+
+CollectorVolunteer::CollectorVolunteer(int id, const string &name, int coolDown) : Volunteer(id, name), coolDown(coolDown), timeLeft(0)
+{
+    type = VolunteerType::COLLECTOR;
+}
 
 CollectorVolunteer *CollectorVolunteer::clone() const
 {
@@ -44,7 +57,9 @@ CollectorVolunteer *CollectorVolunteer::clone() const
 
 void CollectorVolunteer::step()
 {
-    // TODO
+    if (isBusy())
+        if (decreaseCoolDown())
+            finishOrder();
 }
 
 int CollectorVolunteer::getCoolDown() const
@@ -63,7 +78,7 @@ bool CollectorVolunteer::decreaseCoolDown()
         --timeLeft;
 
     return timeLeft == 0;
-} // Decrease timeLeft by 1,return true if timeLeft=0,false otherwise
+}
 
 bool CollectorVolunteer::hasOrdersLeft() const
 {
@@ -73,7 +88,6 @@ bool CollectorVolunteer::hasOrdersLeft() const
 bool CollectorVolunteer::canTakeOrder(const Order &order) const
 {
     return !isBusy() && timeLeft == 0;
-    // TODO timeLeft is a sanity check
 }
 
 void CollectorVolunteer::acceptOrder(const Order &order)
@@ -84,7 +98,8 @@ void CollectorVolunteer::acceptOrder(const Order &order)
     timeLeft = coolDown;
 }
 
-const string bool_cast(const bool b) {
+const string bool_cast(const bool b)
+{
     return b ? "true" : "false";
 }
 
@@ -95,18 +110,23 @@ string CollectorVolunteer::toString() const
     string str = "VolunteerID: " + std::to_string(getId()) + "\n" +
                  "IsBusy: " + bool_cast(isBusy()) + "\n" +
                  "OrderID: " + ordstr + "\n" +
-                 "TimeLeft: " + timestr + "\n" + 
+                 "TimeLeft: " + timestr + "\n" +
                  "OrdersLeft: " + "No Limit";
-    
-    return str;
 
+    return str;
+}
+
+void CollectorVolunteer::setTimeLeft(int time)
+{
+    timeLeft = time;
 }
 
 LimitedCollectorVolunteer::LimitedCollectorVolunteer(int id, const string &name, int coolDown, int maxOrders) : CollectorVolunteer(id, name, coolDown), maxOrders(maxOrders), ordersLeft(maxOrders) {}
+
 LimitedCollectorVolunteer *LimitedCollectorVolunteer::clone() const
 {
     LimitedCollectorVolunteer *cloned = new LimitedCollectorVolunteer(getId(), getName(), getCoolDown(), maxOrders);
-    // TODO timeLeft copy (no way to get)
+    cloned->setTimeLeft(this->getTimeLeft());
     cloned->ordersLeft = this->ordersLeft;
     cloned->completedOrderId = this->getCompletedOrderId();
     cloned->activeOrderId = this->getActiveOrderId();
@@ -127,7 +147,7 @@ void LimitedCollectorVolunteer::acceptOrder(const Order &order)
     if (!canTakeOrder(order))
         throw("Cannot take order");
 
-    ordersLeft--;
+    --ordersLeft;
     CollectorVolunteer::acceptOrder(order);
 }
 int LimitedCollectorVolunteer::getMaxOrders() const
@@ -138,6 +158,12 @@ int LimitedCollectorVolunteer::getNumOrdersLeft() const
 {
     return ordersLeft;
 }
+
+void LimitedCollectorVolunteer::step()
+{
+    CollectorVolunteer::step();
+}
+
 string LimitedCollectorVolunteer::toString() const
 {
     string ordstr = (isBusy()) ? std::to_string(activeOrderId) : "None";
@@ -145,18 +171,20 @@ string LimitedCollectorVolunteer::toString() const
     string str = "VolunteerID: " + std::to_string(getId()) + "\n" +
                  "IsBusy: " + bool_cast(isBusy()) + "\n" +
                  "OrderID: " + ordstr + "\n" +
-                 "TimeLeft: " + timestr + "\n" + 
+                 "TimeLeft: " + timestr + "\n" +
                  "OrdersLeft: " + std::to_string(ordersLeft);
-    
+
     return str;
 }
 
-DriverVolunteer::DriverVolunteer(int id, const string &name, int maxDistance, int distancePerStep) : Volunteer(id, name), maxDistance(maxDistance), distancePerStep(distancePerStep), distanceLeft(0) {}
-// TODO distanceLeft initialized to 0
+DriverVolunteer::DriverVolunteer(int id, const string &name, int maxDistance, int distancePerStep) : Volunteer(id, name), maxDistance(maxDistance), distancePerStep(distancePerStep), distanceLeft(0)
+{
+    type = VolunteerType::DRIVER;
+}
 
 DriverVolunteer *DriverVolunteer::clone() const
 {
-    DriverVolunteer * cloned = new DriverVolunteer(getId(), getName(), maxDistance, distancePerStep);
+    DriverVolunteer *cloned = new DriverVolunteer(getId(), getName(), maxDistance, distancePerStep);
     cloned->distanceLeft = this->distanceLeft;
     cloned->activeOrderId = this->activeOrderId;
     cloned->completedOrderId = this->completedOrderId;
@@ -210,7 +238,9 @@ void DriverVolunteer::acceptOrder(const Order &order)
 
 void DriverVolunteer::step()
 {
-    // TODO TODO TTTTTOOOO
+    if (isBusy())
+        if (decreaseDistanceLeft())
+            finishOrder();
 } // Decrease distanceLeft by distancePerStep
 
 string DriverVolunteer::toString() const
@@ -220,25 +250,35 @@ string DriverVolunteer::toString() const
     string str = "VolunteerID: " + std::to_string(getId()) + "\n" +
                  "IsBusy: " + bool_cast(isBusy()) + "\n" +
                  "OrderID: " + ordstr + "\n" +
-                 "TimeLeft: " + dststr + "\n" + 
+                 "TimeLeft: " + dststr + "\n" +
                  "OrdersLeft: " + "No Limit";
-    
+
     return str;
+}
+
+void DriverVolunteer::setDistanceLeft(int distance)
+{
+    distanceLeft = distance;
 }
 
 LimitedDriverVolunteer::LimitedDriverVolunteer(int id, const string &name, int maxDistance, int distancePerStep, int maxOrders) : DriverVolunteer(id, name, maxDistance, distancePerStep), maxOrders(maxOrders), ordersLeft(maxOrders) {}
 
 LimitedDriverVolunteer *LimitedDriverVolunteer::clone() const
 {
-    LimitedDriverVolunteer * cloned = new LimitedDriverVolunteer(getId(), getName(), getMaxDistance(), getDistancePerStep(), maxOrders);
+    LimitedDriverVolunteer *cloned = new LimitedDriverVolunteer(getId(), getName(), getMaxDistance(), getDistancePerStep(), maxOrders);
+
     cloned->ordersLeft = this->ordersLeft;
     cloned->completedOrderId = this->getCompletedOrderId();
     cloned->activeOrderId = this->getActiveOrderId();
-    // TODO cannot set distanceLeft no access permission
+    cloned->setDistanceLeft(this->getDistanceLeft());
 
     return cloned;
 }
 
+void LimitedDriverVolunteer::step()
+{
+    DriverVolunteer::step();
+}
 int LimitedDriverVolunteer::getMaxOrders() const
 {
     return maxOrders;
@@ -257,18 +297,16 @@ bool LimitedDriverVolunteer::hasOrdersLeft() const
 bool LimitedDriverVolunteer::canTakeOrder(const Order &order) const
 {
     return DriverVolunteer::canTakeOrder(order) && hasOrdersLeft();
-} // Signal if the volunteer is not busy, the order is within the maxDistance.
+}
 
 void LimitedDriverVolunteer::acceptOrder(const Order &order)
 {
     if (!canTakeOrder(order))
-        throw ("Cannot take order");
-    
-    DriverVolunteer::acceptOrder(order);
-    ordersLeft--;
+        throw("Cannot take order");
 
-    
-} // Assign distanceLeft to order's distance and decrease ordersLeft
+    DriverVolunteer::acceptOrder(order);
+    --ordersLeft;
+}
 
 string LimitedDriverVolunteer::toString() const
 {
@@ -277,8 +315,8 @@ string LimitedDriverVolunteer::toString() const
     string str = "VolunteerID: " + std::to_string(getId()) + "\n" +
                  "IsBusy: " + bool_cast(isBusy()) + "\n" +
                  "OrderID: " + ordstr + "\n" +
-                 "TimeLeft: " + dststr + "\n" + 
+                 "TimeLeft: " + dststr + "\n" +
                  "OrdersLeft: " + std::to_string(ordersLeft);
-    
+
     return str;
 }

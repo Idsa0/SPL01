@@ -1,7 +1,11 @@
-actions::act: after acting need to update actions vector
-
-input parser
-
-file reader and data loading
-
+TODO:
 warehouse methods
+tests
+config loader
+restore warehouse uncoded
+
+BUGS:
+doing backup after doing orderStatus with an order that does not exist prints erroneusly
+
+FORUM:
+check it once in a while

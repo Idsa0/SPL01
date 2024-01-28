@@ -7,6 +7,12 @@ using std::vector;
 
 #define NO_ORDER -1
 
+enum class VolunteerType
+{
+    COLLECTOR,
+    DRIVER
+};
+
 class Volunteer
 {
 public:
@@ -25,9 +31,13 @@ public:
     virtual string toString() const = 0;
     virtual Volunteer *clone() const = 0; // Return a copy of the volunteer
 
-    virtual ~Volunteer() = default; // TODO we added this
+    virtual ~Volunteer() = default; // we added this
+    VolunteerType getType() { return type; }
+    void setCompletedOrderId(int id);
+    virtual void finishOrder();
 
 protected:
+    VolunteerType type;
     int completedOrderId; // Initialized to NO_ORDER if no order has been completed yet
     int activeOrderId;    // Initialized to NO_ORDER if no order is being processed
 
@@ -51,6 +61,9 @@ public:
     void acceptOrder(const Order &order) override;
     string toString() const override;
 
+protected:
+    void setTimeLeft(int time);
+
 private:
     const int coolDown; // The time it takes the volunteer to process an order
     int timeLeft;       // Time left until the volunteer finishes his current order
@@ -65,6 +78,7 @@ public:
     bool hasOrdersLeft() const override;
     bool canTakeOrder(const Order &order) const override;
     void acceptOrder(const Order &order) override;
+    void step() override; // we added this
 
     int getMaxOrders() const;
     int getNumOrdersLeft() const;
@@ -92,6 +106,9 @@ public:
     void step() override;                                 // Decrease distanceLeft by distancePerStep
     string toString() const override;
 
+protected:
+    void setDistanceLeft(int distance);
+
 private:
     const int maxDistance;     // The maximum distance of ANY order the volunteer can take
     const int distancePerStep; // The distance the volunteer does in one step
@@ -110,6 +127,7 @@ public:
     bool canTakeOrder(const Order &order) const override; // Signal if the volunteer is not busy, the order is within the maxDistance.
     void acceptOrder(const Order &order) override;        // Assign distanceLeft to order's distance and decrease ordersLeft
     string toString() const override;
+    void step() override;
 
 private:
     const int maxOrders; // The number of orders the volunteer can process in the whole simulation
@@ -118,5 +136,3 @@ private:
 
 static CollectorVolunteer nullCollector = CollectorVolunteer(-1, "nobody", -1);
 static DriverVolunteer nullDriver = DriverVolunteer(-1, "nobody", -1, -1);
-
-// TODO static null

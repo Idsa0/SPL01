@@ -12,7 +12,6 @@ ActionStatus BaseAction::getStatus() const
 void BaseAction::complete()
 {
     status = ActionStatus::COMPLETED;
-    // TODO do we always want to do this?
 }
 
 void BaseAction::error(string errorMsg)
@@ -35,11 +34,15 @@ string BaseAction::actionStatusString() const
     return "COMPLETED";
 }
 
-
 SimulateStep::SimulateStep(int numOfSteps) : BaseAction(), numOfSteps(numOfSteps) {}
 
 void SimulateStep::act(WareHouse &wareHouse)
 {
+    for (int i = 0; i < numOfSteps; i++)
+        wareHouse.simulateStep();
+
+    complete();
+    // TODO anything else?
 }
 
 std::string SimulateStep::toString() const
@@ -59,15 +62,14 @@ SimulateStep *SimulateStep::clone() const
 
     return cloned;
 
-    // TODO clone methods are highly likely to cause bugs, putting this todo only here to reduce todos
+    // TODO clone methods are highly likely to cause bugs, putting this only here
 }
 
-
-
-AddOrder::AddOrder(int id) : BaseAction(), customerId(id) {
-	if (customerId == -1)
-		isNull = true;
-	}
+AddOrder::AddOrder(int id) : BaseAction(), customerId(id)
+{
+    if (customerId == -1)
+        isNull = true;
+}
 
 void AddOrder::act(WareHouse &wareHouse)
 {
@@ -94,7 +96,6 @@ void AddOrder::act(WareHouse &wareHouse)
     complete();
 }
 
-
 string AddOrder::toString() const
 {
     string name = "AddOrder";
@@ -120,8 +121,6 @@ CustomerType stringToCustomerType(const string &ct)
         return CustomerType::Soldier;
 
     return CustomerType::Civilian;
-
-    // TODO "this never results in an error..."
 }
 
 // helper function II -> CustomerType enum to string
@@ -131,8 +130,6 @@ string CustomerTypeToString(CustomerType ct)
         return "civilian";
 
     return "soldier";
-
-    // TODO these two functions are terrible
 }
 
 AddCustomer::AddCustomer(const string &customerName, const string &customerType, int distance, int maxOrders) : BaseAction(), customerName(customerName), customerType(stringToCustomerType(customerType)), distance(distance), maxOrders(maxOrders) {}
@@ -188,7 +185,6 @@ void PrintOrderStatus::act(WareHouse &wareHouse)
         return;
     }
 
-    // TODO do we have to have a ref here?
     std::cout << order.toString() << std::endl;
     complete();
 }
@@ -218,7 +214,6 @@ PrintCustomerStatus::PrintCustomerStatus(int customerId) : BaseAction(), custome
 void PrintCustomerStatus::act(WareHouse &wareHouse)
 {
     Customer &customer = wareHouse.getCustomer(customerId);
-    // TODO do we have to have a ref here?
     if (customer.getId() == -1)
     {
         error("Customer doesn’t exist");
@@ -227,10 +222,10 @@ void PrintCustomerStatus::act(WareHouse &wareHouse)
     string str = "CustomerID: " + std::to_string(customerId) + "\n";
     vector<int> orders = customer.getOrdersIds();
     for (int i : orders)
-        {
-            str += "OrderID: " + std::to_string(i) +"\n";
-            str += wareHouse.getOrder(i).statusToString() + "\n";
-        }
+    {
+        str += "OrderID: " + std::to_string(i) + "\n";
+        str += wareHouse.getOrder(i).statusToString() + "\n";
+    }
     str += "numOrdersLeft: " + std::to_string(customer.getMaxOrders() - customer.getNumOrders());
 
     std::cout << str << std::endl;
@@ -260,7 +255,6 @@ PrintVolunteerStatus::PrintVolunteerStatus(int id) : BaseAction(), volunteerId(i
 void PrintVolunteerStatus::act(WareHouse &wareHouse)
 {
     Volunteer &vol = wareHouse.getVolunteer(volunteerId);
-    // TODO do we have to have a ref here?
     if (vol.getId() == -1)
     {
         error("Volunteer doesn’t exist");
@@ -323,7 +317,6 @@ void Close::act(WareHouse &wareHouse)
     int max = wareHouse.getNewOrderId();
     for (int i = 0; i < max; i++)
         std::cout << wareHouse.getOrder(i).toStringCompact() << std::endl;
-    std::cout << std::endl;
     // TODO is this the string we want?
     wareHouse.close();
     complete();
@@ -376,9 +369,7 @@ string BackupWareHouse::toString() const
     return name + " " + s;
 }
 
-RestoreWareHouse::RestoreWareHouse() : BaseAction()
-{
-}
+RestoreWareHouse::RestoreWareHouse() : BaseAction() {}
 
 void RestoreWareHouse::act(WareHouse &wareHouse)
 {

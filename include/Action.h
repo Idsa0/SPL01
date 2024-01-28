@@ -26,7 +26,7 @@ public:
     virtual string toString() const = 0;
     virtual BaseAction *clone() const = 0;
     string actionStatusString() const;
-	bool isNull; //TODO: we added this. also, ew?
+	bool isNull; // we added this. also, ew?
 	
 protected:
     void complete();
@@ -158,5 +158,3 @@ private:
 };
 
 static AddOrder nullAction = AddOrder(-1);
-
-// TODO static null

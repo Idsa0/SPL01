@@ -1,6 +1,8 @@
 #include "WareHouse.h"
 #include "Volunteer.h"
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include "Action.h"
 #include "InputHandler.h"
 
@@ -129,50 +131,152 @@ void WareHouse::addVolunteer(Volunteer *volunteer)
 
 Customer &WareHouse::getCustomer(int customerId) const
 {
-    for (Customer *customer : customers) // TODO how does this work memory wise
+    for (Customer *customer : customers)
         if (customer->getId() == customerId)
             return *customer;
 
-    // TODO what if the customer doesnt exist?
-
-    // TODO check out this hack to return null values: return *(Customer *)nullptr;
     return nullCustomer;
 }
 
 Volunteer &WareHouse::getVolunteer(int volunteerId) const
 {
-    for (Volunteer *volunteer : volunteers) // TODO how does this work memory wise
+    for (Volunteer *volunteer : volunteers)
         if (volunteer->getId() == volunteerId)
             return *volunteer;
-
-    // TODO what if the customer doesnt exist?
 
     return nullCollector;
 }
 
 Order &WareHouse::getOrder(int orderId) const
 {
-    for (Order *order : pendingOrders) // TODO how does this work memory wise
+    for (Order *order : pendingOrders)
         if (order->getId() == orderId)
             return *order;
 
-    for (Order *order : inProcessOrders) // TODO how does this work memory wise
+    for (Order *order : inProcessOrders)
         if (order->getId() == orderId)
             return *order;
 
-    for (Order *order : completedOrders) // TODO how does this work memory wise
+    for (Order *order : completedOrders)
         if (order->getId() == orderId)
             return *order;
-
-    // TODO what if the customer doesnt exist?
 
     return nullOrder;
 }
 
-void simulateStep()
+Order *WareHouse::getOrderPointer(int orderId) const
 {
-    
+    for (Order *order : pendingOrders)
+        if (order->getId() == orderId)
+            return order;
 
+    for (Order *order : inProcessOrders)
+        if (order->getId() == orderId)
+            return order;
+
+    for (Order *order : completedOrders)
+        if (order->getId() == orderId)
+            return order;
+
+    return &nullOrder;
+}
+
+template <typename T>
+void eraseElement(std::vector<T> vec, T element)
+{
+    auto it = std::find(vec.begin(), vec.end(), element);
+    if (it != vec.end())
+        vec.erase(it);
+}
+
+void WareHouse::simulateStep()
+{
+    // step 1
+    int n = pendingOrders.size();
+    Order **orderArray = new Order *[n];
+
+    for (int i = 0; i < n; i++)
+        orderArray[i] = pendingOrders[i];
+
+    for (int i = 0; i < n; i++)
+    {
+        Order *order = orderArray[i];
+        if (order->getStatus() == OrderStatus::PENDING)
+            for (Volunteer *volunteer : volunteers)
+                if (volunteer->getType() == VolunteerType::COLLECTOR)
+                    if (volunteer->canTakeOrder(*order))
+                    {
+                        volunteer->acceptOrder(*order);
+                        order->setStatus(OrderStatus::COLLECTING);
+                        inProcessOrders.push_back(order);
+                        eraseElement(pendingOrders, order);
+                        break;
+                    }
+                    else if (order->getStatus() == OrderStatus::COLLECTING)
+                        for (Volunteer *volunteer : volunteers)
+                            if (volunteer->getType() == VolunteerType::DRIVER)
+                                if (volunteer->canTakeOrder(*order))
+                                {
+                                    volunteer->acceptOrder(*order);
+                                    order->setStatus(OrderStatus::DELIVERING);
+                                    inProcessOrders.push_back(order);
+                                    eraseElement(pendingOrders, order);
+                                    break;
+                                }
+                                else
+                                {
+                                    std::cout << "Order of illegal type in pendingOrders //WH214 STUPID" << std::endl;
+                                    throw;
+                                }
+    }
+
+    // step 2
+    for (Volunteer *volunteer : volunteers)
+        volunteer->step();
+
+    // step 3
+    for (Volunteer *volunteer : volunteers)
+        if (!volunteer->isBusy() && volunteer->getCompletedOrderId() != NO_ORDER)
+        {
+            Order *order = getOrderPointer(volunteer->getCompletedOrderId());
+            if (order->getStatus() == OrderStatus::COLLECTING)
+            {
+                pendingOrders.push_back(order);
+                eraseElement(inProcessOrders, order);
+                volunteer->setCompletedOrderId(NO_ORDER);
+            }
+
+            else if (order->getStatus() == OrderStatus::DELIVERING)
+            {
+                completedOrders.push_back(order);
+                eraseElement(inProcessOrders, order);
+                order->setStatus(OrderStatus::COMPLETED);
+                volunteer->setCompletedOrderId(NO_ORDER);
+            }
+
+            else
+            {
+                std::cout << "Order of illegal type in inProcessOrders //WH254 STUPID" << std::endl;
+                throw;
+            }
+        }
+
+    // step 4
+    n = volunteers.size();
+    Volunteer **volArray = new Volunteer *[n];
+
+    for (int i = 0; i < n; i++)
+        volArray[i] = volunteers[i];
+
+    for (int i = 0; i < n; i++)
+    {
+        Volunteer *volunteer = volArray[i];
+        if (!volunteer->hasOrdersLeft() && !volunteer->isBusy())
+        {
+            eraseElement(volunteers, volunteer);
+            delete volunteer;
+        }
+    }
 }
 
 const vector<BaseAction *> &WareHouse::getActions() const

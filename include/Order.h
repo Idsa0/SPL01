@@ -27,8 +27,8 @@ class Order {
         int getDriverId() const;
         OrderStatus getStatus() const;
         const string toString() const;
-        const int getDistance() const; // TODO we added this
-        const string toStringCompact() const;// TODO we added this
+        const int getDistance() const; // we added this
+        const string toStringCompact() const;// we added this
         const string statusToString() const;
         Order *clone() const;
 
@@ -43,5 +43,3 @@ class Order {
 };
 
 static Order nullOrder = Order(-1,-1,-1);
-
-// TODO null thing

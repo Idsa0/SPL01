@@ -33,6 +33,7 @@ BaseAction *InputHandler::parse(std::string &input)
 
         action = new SimulateStep(stoi(args[1]));
         // TODO this assumes we are given an int and a valid one, also true for all other actions here pretty much
+        // should we check validity of values?
     }
     else if (args[0] == "order")
     {
@@ -130,28 +131,11 @@ BaseAction *InputHandler::parse(std::string &input)
         helpPrinter();
         return &nullAction;
     }
-    // TODO there is no way to add volunteers, this action does not exist in the instructions for some reason
-
-    /*
-        TODO what if we received an unrecognized command?
-        My proposed solution is creating
-        class NullAction : public BaseAction
-        with empty methods or a method to print a generic error
-        we should also consider std::cerr instead of std::cout
-    */
+    // There is no way to add volunteers, this action does not exist in the instructions for some reason
     return action;
 }
 
 void InputHandler::helpPrinter()
 {
-    // std::ifstream text("/home/tkandel/Desktop/coding/SPL01-input_handling/data/helpText"); // TODO: having external text won't fly in the assignment
-    // if (!text.is_open())
-    //     throw ("helpText file not found");
-
-    // std::string line;
-    // while (std::getline(text, line)){
-    // 	std::cout << line << std::endl;
-    // }
-
     std::cout << "USAGE:\n\nstep (int)step_number\norder (int)ordering_customer\ncustomer (string)customer_name (soldier/civilian)customer_type (int)distance (int)max_orders\norderStatus (int)order_id\ncustomerStatus (int)customer_id\nvolunteerStatus (int)volunteer_id\nlog\nclose\nbackup\nrestore" << std::endl;
 }
