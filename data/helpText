@@ -1,0 +1,13 @@
+USAGE:
+
+step (int)step_number
+order (int)ordering_customer
+customer (string)customer_name (soldier/civilian)customer_type (int)distance (int)max_orders
+orderStatus (int)order_id
+customerStatus (int)customer_id
+volunteerStatus (int)volunteer_id
+log
+close
+backup
+restore
+

@@ -1,6 +1,8 @@
 #include "WareHouse.h"
 #include "Volunteer.h"
 #include <iostream>
+#include "Action.h"
+#include "InputHandler.h"
 
 using namespace std;
 
@@ -10,6 +12,15 @@ WareHouse::WareHouse(const string &configFilePath) // TODO config parser
     customerCounter = 0;
     volunteerCounter = 0;
     orderCounter = 0;
+    buildFromConfigurationFile(configFilePath);
+}
+
+WareHouse::WareHouse() {
+	isOpen = false; // TODO check reqs
+    customerCounter = 0;
+    volunteerCounter = 0;
+    orderCounter = 0;
+	
 }
 
 void WareHouse::start()
@@ -20,8 +31,96 @@ void WareHouse::start()
 
     while (isOpen)
     {
-        // LOOP (endless one for now)
+        string inputString;
+        getline(cin, inputString);
+        BaseAction * action = InputHandler::parse(inputString);
+        if (!action->isNull){
+			action->act(*this);
+			this->addAction(action);
+		}
     }
+}
+
+
+void WareHouse::buildFromConfigurationFile(const std::string &path)
+{
+	if (path=="adminPass") // TODO: quick method to bypass config. to remove.
+		return;
+    std::ifstream config(path);
+    if (!config.is_open())
+        throw;
+	
+	
+    std::string line;
+    while (std::getline(config, line)){
+		std::vector<std::string> args{};
+
+		std::string word;
+		for (char c : line)
+			if (c != ' ')
+				word += c;
+			else if (!word.empty())
+			{
+				args.push_back(word);
+				word.clear();
+			}
+		if (!word.empty())
+			args.push_back(word);
+		if (args[0] == "customer")
+		{
+			if (args.size() != 5)
+				throw;
+
+			AddCustomer action = AddCustomer(args[1], args[2], stoi(args[3]), stoi(args[4]));
+			
+			action.act(*this); // using the action to reuse code. This does not get added to the warehouse actions log.
+			
+		}
+		else if (args[0] == "volunteer"){
+			
+			if (args.size() <= 3)
+				throw;
+			
+			if (args[3] == "collector") {
+				if (args.size() != 4)
+					throw;
+				CollectorVolunteer * colvol = new CollectorVolunteer(this->getNewVolunteerId(), args[2], std::stoi(args[4]));
+				this->addVolunteer(colvol);
+			}
+			else if (args[3] == "limited_collector"){
+				if (args.size() != 5)
+					throw;
+				LimitedCollectorVolunteer * limcolvol = new LimitedCollectorVolunteer
+				(this->getNewVolunteerId(), args[2], std::stoi(args[4]), std::stoi(args[5]));
+				this->addVolunteer(limcolvol);
+			}
+			else if (args[3] == "driver") {
+				if (args.size() != 5)
+					throw;
+				DriverVolunteer * drivol = new DriverVolunteer(this->getNewVolunteerId(), args[2], std::stoi(args[4]), std::stoi(args[5]));
+				this->addVolunteer(drivol);
+			
+			}
+			else if (args[3] == "limited_driver") {
+				if (args.size() != 5)
+					throw;
+				LimitedDriverVolunteer * drivol = new LimitedDriverVolunteer(this->getNewVolunteerId(), args[2], std::stoi(args[4]), 
+				std::stoi(args[5]), std::stoi(args[6]));
+				
+				this->addVolunteer(drivol);
+			
+			}
+			else 
+				throw;
+			
+		} 
+		else
+			throw;
+		
+	}	
+    
+
+    config.close();
 }
 
 void WareHouse::addOrder(Order *order)
@@ -37,6 +136,11 @@ void WareHouse::addAction(BaseAction *action)
 void WareHouse::addCustomer(Customer *customer)
 {
     customers.push_back(customer);
+}
+
+void WareHouse::addVolunteer(Volunteer *volunteer)
+{
+	volunteers.push_back(volunteer);
 }
 
 Customer &WareHouse::getCustomer(int customerId) const
