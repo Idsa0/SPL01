@@ -1,27 +1,110 @@
 #include "WareHouse.h"
 #include "Volunteer.h"
 #include <iostream>
+#include "Action.h"
+#include "InputHandler.h"
 
-using namespace std;
-
-WareHouse::WareHouse(const string &configFilePath) // TODO config parser
+WareHouse::WareHouse(const string &configFilePath) : WareHouse()
 {
-    isOpen = false; // TODO check reqs
-    customerCounter = 0;
-    volunteerCounter = 0;
-    orderCounter = 0;
+    buildFromConfigurationFile(configFilePath);
 }
+
+WareHouse::WareHouse() : isOpen{false}, customerCounter{0}, volunteerCounter{0}, orderCounter{0} {}
 
 void WareHouse::start()
 {
-    // TODO should we print here?
     isOpen = true;
-    cout << "Warehouse is open!" << endl;
+    std::cout << "Warehouse is open!" << std::endl;
 
     while (isOpen)
     {
-        // LOOP (endless one for now)
+        string inputString;
+        std::getline(std::cin, inputString);
+        BaseAction *action = InputHandler::parse(inputString);
+        if (!action->isNull)
+        {
+            action->act(*this);
+            addAction(action);
+        }
     }
+}
+
+void WareHouse::buildFromConfigurationFile(const std::string &path)
+{
+    if (path == "adminPass") // TODO: quick method to bypass config. to remove.
+        return;
+    std::ifstream config(path);
+    if (!config.is_open())
+        throw;
+
+    std::string line;
+    while (std::getline(config, line))
+    {
+        std::vector<std::string> args{};
+
+        std::string word;
+        for (char c : line)
+            if (c != ' ')
+                word += c;
+            else if (!word.empty())
+            {
+                args.push_back(word);
+                word.clear();
+            }
+        if (!word.empty())
+            args.push_back(word);
+        if (args[0] == "customer")
+        {
+            if (args.size() != 5)
+                throw;
+
+            AddCustomer action = AddCustomer(args[1], args[2], stoi(args[3]), stoi(args[4]));
+
+            action.act(*this); // using the action to reuse code. This does not get added to the warehouse actions log.
+        }
+        else if (args[0] == "volunteer")
+        {
+            if (args.size() <= 3)
+                throw;
+
+            if (args[3] == "collector")
+            {
+                if (args.size() != 4)
+                    throw;
+                CollectorVolunteer *colvol = new CollectorVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]));
+                addVolunteer(colvol);
+            }
+            else if (args[3] == "limited_collector")
+            {
+                if (args.size() != 5)
+                    throw;
+                LimitedCollectorVolunteer *limcolvol = new LimitedCollectorVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]), std::stoi(args[5]));
+                addVolunteer(limcolvol);
+            }
+            else if (args[3] == "driver")
+            {
+                if (args.size() != 5)
+                    throw;
+                DriverVolunteer *drivol = new DriverVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]), std::stoi(args[5]));
+                addVolunteer(drivol);
+            }
+            else if (args[3] == "limited_driver")
+            {
+                if (args.size() != 5)
+                    throw;
+                LimitedDriverVolunteer *drivol = new LimitedDriverVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]),
+                                                                            std::stoi(args[5]), std::stoi(args[6]));
+
+                addVolunteer(drivol);
+            }
+            else
+                throw;
+        }
+        else
+            throw;
+    }
+
+    config.close();
 }
 
 void WareHouse::addOrder(Order *order)
@@ -37,6 +120,11 @@ void WareHouse::addAction(BaseAction *action)
 void WareHouse::addCustomer(Customer *customer)
 {
     customers.push_back(customer);
+}
+
+void WareHouse::addVolunteer(Volunteer *volunteer)
+{
+    volunteers.push_back(volunteer);
 }
 
 Customer &WareHouse::getCustomer(int customerId) const
@@ -79,6 +167,12 @@ Order &WareHouse::getOrder(int orderId) const
     // TODO what if the customer doesnt exist?
 
     return nullOrder;
+}
+
+void simulateStep()
+{
+    
+
 }
 
 const vector<BaseAction *> &WareHouse::getActions() const
@@ -138,17 +232,17 @@ WareHouse *WareHouse::clone() const
 
     cloned->isOpen = this->isOpen;
     for (BaseAction *action : actionsLog)
-        cloned->actionsLog.push_back(action);
+        cloned->actionsLog.push_back(action->clone());
     for (Volunteer *volunteer : volunteers)
-        cloned->volunteers.push_back(volunteer);
+        cloned->volunteers.push_back(volunteer->clone());
     for (Order *order : pendingOrders)
-        cloned->pendingOrders.push_back(order);
+        cloned->pendingOrders.push_back(order->clone());
     for (Order *order : inProcessOrders)
-        cloned->inProcessOrders.push_back(order);
+        cloned->inProcessOrders.push_back(order->clone());
     for (Order *order : completedOrders)
-        cloned->completedOrders.push_back(order);
+        cloned->completedOrders.push_back(order->clone());
     for (Customer *customer : customers)
-        cloned->customers.push_back(customer);
+        cloned->customers.push_back(customer->clone());
 
     cloned->customerCounter = this->customerCounter;
     cloned->orderCounter = this->orderCounter;

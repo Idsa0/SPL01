@@ -8,5 +8,5 @@ class InputHandler
 {
     public:
         static BaseAction *parse(std::string &input);
-        static std::vector<BaseAction *> readConfigurationFile(std::string &path);
+		static void helpPrinter();
 };

@@ -26,7 +26,8 @@ public:
     virtual string toString() const = 0;
     virtual BaseAction *clone() const = 0;
     string actionStatusString() const;
-
+	bool isNull; //TODO: we added this. also, ew?
+	
 protected:
     void complete();
     void error(string errorMsg);
@@ -57,7 +58,6 @@ public:
     void act(WareHouse &wareHouse) override;
     string toString() const override;
     AddOrder *clone() const override;
-
 private:
     const int customerId;
 };

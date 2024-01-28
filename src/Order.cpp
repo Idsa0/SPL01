@@ -77,13 +77,21 @@ const string Order::toStringCompact() const
 {
     string str = "OrderId: " + std::to_string(id) + ", " +
                  "CustomerId: " + std::to_string(customerId) + ", " +
-                 "OrderStatus: " + statusToString() ;
+                 "OrderStatus: " + statusToString();
 
     return str;
-                 
 }
 
 const int Order::getDistance() const
 {
     return distance;
+}
+
+Order *Order::clone() const
+{
+    Order *order = new Order(id, customerId, distance);
+    order->setStatus(this->status);
+    order->collectorId = this->collectorId;
+    order->driverId = this->driverId;
+    return order;
 }

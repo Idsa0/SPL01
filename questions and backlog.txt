@@ -1,0 +1,7 @@
+actions::act: after acting need to update actions vector
+
+input parser
+
+file reader and data loading
+
+warehouse methods
