@@ -277,6 +277,9 @@ void WareHouse::simulateStep()
             delete volunteer;
         }
     }
+
+    delete []orderArray;
+    delete []volArray;
 }
 
 const vector<BaseAction *> &WareHouse::getActions() const
