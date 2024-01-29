@@ -26,14 +26,17 @@ public:
     virtual string toString() const = 0;
     virtual BaseAction *clone() const = 0;
     string actionStatusString() const;
-	bool isNull; // we added this. also, ew?
+	bool isNull; // we added this. 
+    
 	
 protected:
     void complete();
     void error(string errorMsg);
     string getErrorMsg() const;
+    void setErrorMsg(string errorMsg); // we added this
 
 private:
+    
     string errorMsg;
     ActionStatus status;
 };

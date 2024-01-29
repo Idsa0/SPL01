@@ -16,9 +16,14 @@ void BaseAction::complete()
 
 void BaseAction::error(string errorMsg)
 {
-    this->errorMsg = errorMsg;
+    setErrorMsg(errorMsg);
     status = ActionStatus::ERROR;
     std::cout << errorMsg << std::endl;
+}
+
+void BaseAction::setErrorMsg(string errorMsg)
+{
+    this->errorMsg = errorMsg;
 }
 
 string BaseAction::getErrorMsg() const
@@ -56,10 +61,9 @@ std::string SimulateStep::toString() const
 SimulateStep *SimulateStep::clone() const
 {
     SimulateStep *cloned = new SimulateStep(numOfSteps);
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
-
     return cloned;
 
     // TODO clone methods are highly likely to cause bugs, putting this only here
@@ -107,7 +111,7 @@ string AddOrder::toString() const
 AddOrder *AddOrder::clone() const
 {
     AddOrder *cloned = new AddOrder(customerId);
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -155,7 +159,7 @@ void AddCustomer::act(WareHouse &wareHouse)
 AddCustomer *AddCustomer::clone() const
 {
     AddCustomer *cloned = new AddCustomer(customerName, CustomerTypeToString(this->customerType), distance, maxOrders);
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -192,7 +196,7 @@ void PrintOrderStatus::act(WareHouse &wareHouse)
 PrintOrderStatus *PrintOrderStatus::clone() const
 {
     PrintOrderStatus *cloned = new PrintOrderStatus(orderId);
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -235,7 +239,7 @@ void PrintCustomerStatus::act(WareHouse &wareHouse)
 PrintCustomerStatus *PrintCustomerStatus::clone() const
 {
     PrintCustomerStatus *cloned = new PrintCustomerStatus(customerId);
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -267,7 +271,7 @@ void PrintVolunteerStatus::act(WareHouse &wareHouse)
 PrintVolunteerStatus *PrintVolunteerStatus::clone() const
 {
     PrintVolunteerStatus *cloned = new PrintVolunteerStatus(volunteerId);
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -296,7 +300,7 @@ void PrintActionsLog::act(WareHouse &wareHouse)
 PrintActionsLog *PrintActionsLog::clone() const
 {
     PrintActionsLog *cloned = new PrintActionsLog();
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -325,7 +329,7 @@ void Close::act(WareHouse &wareHouse)
 Close *Close::clone() const
 {
     Close *cloned = new Close();
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -355,7 +359,7 @@ BackupWareHouse *BackupWareHouse::clone() const
 
 {
     BackupWareHouse *cloned = new BackupWareHouse();
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 
@@ -373,13 +377,23 @@ RestoreWareHouse::RestoreWareHouse() : BaseAction() {}
 
 void RestoreWareHouse::act(WareHouse &wareHouse)
 {
-    // TODO
+    extern WareHouse* backup;
+
+    if (backup == nullptr)
+    {
+        error("No Backup Available");
+        return;
+    }
+    wareHouse = *backup;
+
+    complete();
+
 }
 
 RestoreWareHouse *RestoreWareHouse::clone() const
 {
     RestoreWareHouse *cloned = new RestoreWareHouse();
-    cloned->error(this->getErrorMsg());
+    cloned->setErrorMsg(this->getErrorMsg());
     if (this->getStatus() == ActionStatus::COMPLETED)
         cloned->complete();
 

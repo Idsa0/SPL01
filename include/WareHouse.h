@@ -19,6 +19,8 @@ class WareHouse {
     public:
         WareHouse(); // we added this
         WareHouse(const string &configFilePath);
+        WareHouse(const WareHouse& other); // TODO we added this
+        WareHouse(WareHouse&& other); // TODO we added this
         void start();
         void addOrder(Order* order);
         void addAction(BaseAction* action);
@@ -39,7 +41,8 @@ class WareHouse {
         
         WareHouse *clone() const;
         
-        
+        WareHouse &operator=(const WareHouse &other);
+        WareHouse &operator=(WareHouse&& other);
 
     private:
         bool isOpen;

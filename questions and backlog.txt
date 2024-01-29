@@ -1,11 +1,14 @@
 TODO:
-warehouse methods
-tests
+
+tests:
 config loader
-restore warehouse uncoded
+step
+everything else
+exact prints
+
 
 BUGS:
-doing backup after doing orderStatus with an order that does not exist prints erroneusly
+
 
 FORUM:
 check it once in a while

@@ -13,6 +13,37 @@ WareHouse::WareHouse(const string &configFilePath) : WareHouse()
 
 WareHouse::WareHouse() : isOpen{false}, customerCounter{0}, volunteerCounter{0}, orderCounter{0} {}
 
+WareHouse::WareHouse(const WareHouse& other) : isOpen{other.isOpen}, customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
+{
+        for (BaseAction *action : other.actionsLog)
+            this->actionsLog.push_back(action->clone());
+        for (Volunteer *volunteer : other.volunteers)
+            this->volunteers.push_back(volunteer->clone());
+        for (Order *order : other.pendingOrders)
+            this->pendingOrders.push_back(order->clone());
+        for (Order *order : other.inProcessOrders)
+            this->inProcessOrders.push_back(order->clone());
+        for (Order *order : other.completedOrders)
+            this->completedOrders.push_back(order->clone());
+        for (Customer *customer : other.customers)
+            this->customers.push_back(customer->clone());
+}
+
+WareHouse::WareHouse(WareHouse&& other) : isOpen{other.isOpen}, customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
+{
+    for (BaseAction *action : other.actionsLog)
+            this->actionsLog.push_back(action->clone());
+        for (Volunteer *volunteer : other.volunteers)
+            this->volunteers.push_back(volunteer->clone());
+        for (Order *order : other.pendingOrders)
+            this->pendingOrders.push_back(order->clone());
+        for (Order *order : other.inProcessOrders)
+            this->inProcessOrders.push_back(order->clone());
+        for (Order *order : other.completedOrders)
+            this->completedOrders.push_back(order->clone());
+        for (Customer *customer : other.customers)
+            this->customers.push_back(customer->clone());
+}
 void WareHouse::start()
 {
     isOpen = true;
@@ -333,6 +364,57 @@ WareHouse::~WareHouse()
         delete customer;
 }
 
+WareHouse &WareHouse::operator=(const WareHouse &other){
+    if (this != &other)
+    {
+
+        for (BaseAction *action : actionsLog)
+            delete action;
+        actionsLog.clear();
+
+        for (Volunteer *volunteer : volunteers)
+            delete volunteer;
+        volunteers.clear();
+
+        for (Order *order : pendingOrders)
+            delete order;
+        pendingOrders.clear();
+
+        for (Order *order : inProcessOrders)
+            delete order;
+        inProcessOrders.clear();
+
+        for (Order *order : completedOrders)
+            delete order;
+        completedOrders.clear();
+
+        for (Customer *customer : customers)
+            delete customer;
+        customers.clear();
+
+        this->isOpen = other.isOpen;
+        for (BaseAction *action : other.actionsLog)
+            this->actionsLog.push_back(action->clone());
+        for (Volunteer *volunteer : other.volunteers)
+            this->volunteers.push_back(volunteer->clone());
+        for (Order *order : other.pendingOrders)
+            this->pendingOrders.push_back(order->clone());
+        for (Order *order : other.inProcessOrders)
+            this->inProcessOrders.push_back(order->clone());
+        for (Order *order : other.completedOrders)
+            this->completedOrders.push_back(order->clone());
+        for (Customer *customer : other.customers)
+            this->customers.push_back(customer->clone());
+
+        this->customerCounter = other.customerCounter;
+        this->orderCounter = other.orderCounter;
+        this->volunteerCounter = other.volunteerCounter;
+    }
+
+
+    return *this;
+}
+
 WareHouse *WareHouse::clone() const
 {
     WareHouse *cloned = new WareHouse();
@@ -356,4 +438,56 @@ WareHouse *WareHouse::clone() const
     cloned->volunteerCounter = this->volunteerCounter;
 
     return cloned;
+}
+
+
+WareHouse &WareHouse::operator=(WareHouse&& other){
+    if (this != &other)
+    {
+
+        for (BaseAction *action : actionsLog)
+            delete action;
+        actionsLog.clear();
+
+        for (Volunteer *volunteer : volunteers)
+            delete volunteer;
+        volunteers.clear();
+
+        for (Order *order : pendingOrders)
+            delete order;
+        pendingOrders.clear();
+
+        for (Order *order : inProcessOrders)
+            delete order;
+        inProcessOrders.clear();
+
+        for (Order *order : completedOrders)
+            delete order;
+        completedOrders.clear();
+
+        for (Customer *customer : customers)
+            delete customer;
+        customers.clear();
+
+        this->isOpen = other.isOpen;
+        for (BaseAction *action : other.actionsLog)
+            this->actionsLog.push_back(action->clone());
+        for (Volunteer *volunteer : other.volunteers)
+            this->volunteers.push_back(volunteer->clone());
+        for (Order *order : other.pendingOrders)
+            this->pendingOrders.push_back(order->clone());
+        for (Order *order : other.inProcessOrders)
+            this->inProcessOrders.push_back(order->clone());
+        for (Order *order : other.completedOrders)
+            this->completedOrders.push_back(order->clone());
+        for (Customer *customer : other.customers)
+            this->customers.push_back(customer->clone());
+
+        this->customerCounter = other.customerCounter;
+        this->orderCounter = other.orderCounter;
+        this->volunteerCounter = other.volunteerCounter;
+    }
+
+
+    return *this;
 }
