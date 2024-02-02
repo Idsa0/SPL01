@@ -232,6 +232,9 @@ void WareHouse::simulateStep()
     Order **orderArray = new Order *[n];
 
     for (int i = 0; i < n; i++)
+        orderArray[i] = pendingOrders[i];
+
+    for (int i = 0; i < n; i++)
     {
         Order *order = orderArray[i];
         if (order->getStatus() == OrderStatus::PENDING)

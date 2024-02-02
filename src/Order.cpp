@@ -55,7 +55,7 @@ const string Order::statusToString() const
         return "PENDING";
 
     case OrderStatus::DELIVERING:
-        return "DELIVERI    NG";
+        return "DELIVERING";
 
     case OrderStatus::COMPLETED:
         return "COMPLETED";
@@ -73,7 +73,7 @@ const string Order::toString() const
                  "OrderStatus: " + statusToString() + "\n" +
                  "CustomerId: " + std::to_string(customerId) + "\n" +
                  "CollectorId: " + col + "\n" +
-                 "DriverId: " + drv + "\n";
+                 "DriverId: " + drv;
 
     return str;
 }

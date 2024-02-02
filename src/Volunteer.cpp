@@ -85,7 +85,7 @@ bool CollectorVolunteer::canTakeOrder(const Order &order) const
 
 void CollectorVolunteer::acceptOrder(const Order &order)
 {
-    if (!canTakeOrder(order))
+    if (!CollectorVolunteer::canTakeOrder(order))
         throw("Cannot take order");
     activeOrderId = order.getId();
     timeLeft = coolDown;
@@ -212,7 +212,7 @@ bool DriverVolunteer::canTakeOrder(const Order &order) const
 
 void DriverVolunteer::acceptOrder(const Order &order)
 {
-    if (!canTakeOrder(order))
+    if (!DriverVolunteer::canTakeOrder(order))
         throw("Cannot take order");
     activeOrderId = order.getId();
     distanceLeft = order.getDistance();

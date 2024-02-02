@@ -164,9 +164,7 @@ string AddCustomer::toString() const
     return name + " " + args + " " + s;
 }
 
-PrintOrderStatus::PrintOrderStatus(int id) : BaseAction(), orderId(id)
-{
-}
+PrintOrderStatus::PrintOrderStatus(int id) : BaseAction(), orderId(id) {}
 
 void PrintOrderStatus::act(WareHouse &wareHouse)
 {
@@ -174,7 +172,7 @@ void PrintOrderStatus::act(WareHouse &wareHouse)
     Order &order = wareHouse.getOrder(orderId);
     if (order.getId() == -1)
     {
-        error("Order doesn’t exist");
+        error("Order doesn't exist");
         return;
     }
 
@@ -195,9 +193,7 @@ string PrintOrderStatus::toString() const
     return name + " " + args + " " + s;
 }
 
-PrintCustomerStatus::PrintCustomerStatus(int customerId) : BaseAction(), customerId(customerId)
-{
-}
+PrintCustomerStatus::PrintCustomerStatus(int customerId) : BaseAction(), customerId(customerId) {}
 
 void PrintCustomerStatus::act(WareHouse &wareHouse)
 {
@@ -205,7 +201,7 @@ void PrintCustomerStatus::act(WareHouse &wareHouse)
     Customer &customer = wareHouse.getCustomer(customerId);
     if (customer.getId() == -1)
     {
-        error("Customer doesn’t exist");
+        error("Customer doesn't exist");
         return;
     }
     string str = "CustomerID: " + std::to_string(customerId) + "\n";
@@ -213,7 +209,7 @@ void PrintCustomerStatus::act(WareHouse &wareHouse)
     for (int i : orders)
     {
         str += "OrderID: " + std::to_string(i) + "\n";
-        str += wareHouse.getOrder(i).statusToString() + "\n";
+        str += "OrderStatus: " + wareHouse.getOrder(i).statusToString() + "\n";
     }
     str += "numOrdersLeft: " + std::to_string(customer.getMaxOrders() - customer.getNumOrders());
 
@@ -242,7 +238,7 @@ void PrintVolunteerStatus::act(WareHouse &wareHouse)
     Volunteer &vol = wareHouse.getVolunteer(volunteerId);
     if (vol.getId() == -1)
     {
-        error("Volunteer doesn’t exist");
+        error("Volunteer doesn't exist");
         return;
     }
     std::cout << vol.toString() << std::endl;
@@ -347,6 +343,7 @@ void RestoreWareHouse::act(WareHouse &wareHouse)
     if (backup == nullptr)
     {
         error("No Backup Available");
+        wareHouse.addAction(this); // TODO i added this here so it appears in the log
         return;
     }
     wareHouse = *backup;
