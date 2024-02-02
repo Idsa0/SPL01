@@ -1,10 +1,13 @@
 TODO:
+comments
+empty lines on some command outputs and some not? should have emptylines on all.
+ro5 move constructor in particular
+
 
 tests:
-config loader
 step
 everything else
-exact prints
+when cd/dst  =0 the order is completed and moved on the same step
 
 
 BUGS:
@@ -12,3 +15,21 @@ BUGS:
 
 FORUM:
 check it once in a while
+
+
+
+Interest:
+
+why does this make a memory leak:
+
+void BackupWareHouse::act(WareHouse &wareHouse)
+{
+    extern WareHouse *backup;
+    if (backup != nullptr)
+        delete backup;
+
+    backup = wareHouse.clone();
+    delete backup;
+    complete();
+}
+

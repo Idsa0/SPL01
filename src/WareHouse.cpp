@@ -4,61 +4,64 @@
 #include <vector>
 #include <algorithm>
 #include "Action.h"
-#include "InputHandler.h"
 
 WareHouse::WareHouse(const string &configFilePath) : WareHouse()
 {
     buildFromConfigurationFile(configFilePath);
 }
 
-WareHouse::WareHouse() : isOpen{false}, customerCounter{0}, volunteerCounter{0}, orderCounter{0} {}
+WareHouse::WareHouse() : nullCustomer(new CivilianCustomer(-1, "nobody", -1, -1)), nullCollector(new CollectorVolunteer(-1, "nobody", -1)), nullDriver(new DriverVolunteer(-1, "nobody", -1, -1)), nullAction(new AddOrder(-1)), nullOrder(new Order(-1, -1, -1)),
+                         isOpen{false}, actionsLog(vector<BaseAction *>{}), volunteers(vector<Volunteer *>{}), pendingOrders(vector<Order *>{}), inProcessOrders(vector<Order *>{}), completedOrders(vector<Order *>{}), customers(vector<Customer *>{}),
+                         customerCounter{0}, volunteerCounter{0}, orderCounter{0} {}
 
-WareHouse::WareHouse(const WareHouse& other) : isOpen{other.isOpen}, customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
-{
-        for (BaseAction *action : other.actionsLog)
-            this->actionsLog.push_back(action->clone());
-        for (Volunteer *volunteer : other.volunteers)
-            this->volunteers.push_back(volunteer->clone());
-        for (Order *order : other.pendingOrders)
-            this->pendingOrders.push_back(order->clone());
-        for (Order *order : other.inProcessOrders)
-            this->inProcessOrders.push_back(order->clone());
-        for (Order *order : other.completedOrders)
-            this->completedOrders.push_back(order->clone());
-        for (Customer *customer : other.customers)
-            this->customers.push_back(customer->clone());
-}
-
-WareHouse::WareHouse(WareHouse&& other) : isOpen{other.isOpen}, customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
+WareHouse::WareHouse(const WareHouse &other) : nullCustomer(new CivilianCustomer(-1, "nobody", -1, -1)), nullCollector(new CollectorVolunteer(-1, "nobody", -1)), nullDriver(new DriverVolunteer(-1, "nobody", -1, -1)), nullAction(new AddOrder(-1)), nullOrder(new Order(-1, -1, -1)),
+                                               isOpen{other.isOpen}, actionsLog(vector<BaseAction *>{}), volunteers(vector<Volunteer *>{}), pendingOrders(vector<Order *>{}), inProcessOrders(vector<Order *>{}), completedOrders(vector<Order *>{}), customers(vector<Customer *>{}),
+                                               customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
 {
     for (BaseAction *action : other.actionsLog)
-            this->actionsLog.push_back(action->clone());
-        for (Volunteer *volunteer : other.volunteers)
-            this->volunteers.push_back(volunteer->clone());
-        for (Order *order : other.pendingOrders)
-            this->pendingOrders.push_back(order->clone());
-        for (Order *order : other.inProcessOrders)
-            this->inProcessOrders.push_back(order->clone());
-        for (Order *order : other.completedOrders)
-            this->completedOrders.push_back(order->clone());
-        for (Customer *customer : other.customers)
-            this->customers.push_back(customer->clone());
+        this->actionsLog.push_back(action->clone());
+    for (Volunteer *volunteer : other.volunteers)
+        this->volunteers.push_back(volunteer->clone());
+    for (Order *order : other.pendingOrders)
+        this->pendingOrders.push_back(order->clone());
+    for (Order *order : other.inProcessOrders)
+        this->inProcessOrders.push_back(order->clone());
+    for (Order *order : other.completedOrders)
+        this->completedOrders.push_back(order->clone());
+    for (Customer *customer : other.customers)
+        this->customers.push_back(customer->clone());
 }
+
+WareHouse::WareHouse(WareHouse &&other) : nullCustomer(new CivilianCustomer(-1, "nobody", -1, -1)), nullCollector(new CollectorVolunteer(-1, "nobody", -1)), nullDriver(new DriverVolunteer(-1, "nobody", -1, -1)), nullAction(new AddOrder(-1)), nullOrder(new Order(-1, -1, -1)),
+                                          isOpen{other.isOpen}, actionsLog(vector<BaseAction *>{}), volunteers(vector<Volunteer *>{}), pendingOrders(vector<Order *>{}), inProcessOrders(vector<Order *>{}), completedOrders(vector<Order *>{}), customers(vector<Customer *>{}),
+                                          customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
+{
+    for (BaseAction *action : other.actionsLog)
+        this->actionsLog.push_back(action->clone());
+    for (Volunteer *volunteer : other.volunteers)
+        this->volunteers.push_back(volunteer->clone());
+    for (Order *order : other.pendingOrders)
+        this->pendingOrders.push_back(order->clone());
+    for (Order *order : other.inProcessOrders)
+        this->inProcessOrders.push_back(order->clone());
+    for (Order *order : other.completedOrders)
+        this->completedOrders.push_back(order->clone());
+    for (Customer *customer : other.customers)
+        this->customers.push_back(customer->clone());
+}
+
 void WareHouse::start()
 {
-    isOpen = true;
+    open();
     std::cout << "Warehouse is open!" << std::endl;
 
     while (isOpen)
     {
         string inputString;
         std::getline(std::cin, inputString);
-        BaseAction *action = InputHandler::parse(inputString);
+        BaseAction *action = WareHouse::parse(inputString);
         if (!action->isNull)
-        {
             action->act(*this);
-            addAction(action);
-        }
     }
 }
 
@@ -68,73 +71,75 @@ void WareHouse::buildFromConfigurationFile(const std::string &path)
         return;
     std::ifstream config(path);
     if (!config.is_open())
+    {
+        std::cout << "could not open file!" << std::endl;
         throw;
+    }
 
     std::string line;
     while (std::getline(config, line))
     {
-        std::vector<std::string> args{};
+        if (line.empty())
+            continue;
 
-        std::string word;
-        for (char c : line)
-            if (c != ' ')
-                word += c;
-            else if (!word.empty())
-            {
-                args.push_back(word);
-                word.clear();
-            }
-        if (!word.empty())
-            args.push_back(word);
+        std::vector<std::string> args = WareHouse::argLineBreaker(line, true);
+
+        if (args.empty())
+            continue;
+
         if (args[0] == "customer")
         {
             if (args.size() != 5)
-                throw;
+                std::cout << "Could not parse line!" << std::endl;
 
-            AddCustomer action = AddCustomer(args[1], args[2], stoi(args[3]), stoi(args[4]));
+            Customer *customer;
+            if (args[2] == "civilian")
+                customer = new CivilianCustomer(getNewCustomerId(), args[1], std::stoi(args[3]), std::stoi(args[4]));
+            else if (args[2] == "soldier")
+                customer = new SoldierCustomer(getNewCustomerId(), args[1], std::stoi(args[3]), std::stoi(args[4]));
 
-            action.act(*this); // using the action to reuse code. This does not get added to the warehouse actions log.
+            addCustomer(customer);
         }
         else if (args[0] == "volunteer")
         {
             if (args.size() <= 3)
-                throw;
+                std::cout << "Could not parse line!" << std::endl;
 
-            if (args[3] == "collector")
+            if (args[2] == "collector")
             {
                 if (args.size() != 4)
-                    throw;
-                CollectorVolunteer *colvol = new CollectorVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]));
+                    std::cout << "Could not parse line!" << std::endl;
+                CollectorVolunteer *colvol = new CollectorVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]));
                 addVolunteer(colvol);
             }
-            else if (args[3] == "limited_collector")
+            else if (args[2] == "limited_collector")
             {
                 if (args.size() != 5)
-                    throw;
-                LimitedCollectorVolunteer *limcolvol = new LimitedCollectorVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]), std::stoi(args[5]));
+                    std::cout << "Could not parse line!" << std::endl;
+                LimitedCollectorVolunteer *limcolvol = new LimitedCollectorVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]), std::stoi(args[4]));
                 addVolunteer(limcolvol);
             }
-            else if (args[3] == "driver")
+            else if (args[2] == "driver")
             {
                 if (args.size() != 5)
-                    throw;
-                DriverVolunteer *drivol = new DriverVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]), std::stoi(args[5]));
+                    std::cout << "Could not parse line!" << std::endl;
+                DriverVolunteer *drivol = new DriverVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]), std::stoi(args[4]));
                 addVolunteer(drivol);
             }
-            else if (args[3] == "limited_driver")
+            else if (args[2] == "limited_driver")
             {
-                if (args.size() != 5)
-                    throw;
-                LimitedDriverVolunteer *drivol = new LimitedDriverVolunteer(getNewVolunteerId(), args[2], std::stoi(args[4]),
-                                                                            std::stoi(args[5]), std::stoi(args[6]));
+                if (args.size() != 6)
+                    std::cout << "Could not parse line!" << std::endl;
+                LimitedDriverVolunteer *drivol = new LimitedDriverVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]),
+                                                                            std::stoi(args[4]), std::stoi(args[5]));
 
                 addVolunteer(drivol);
             }
             else
-                throw;
+                std::cout << "Could not parse line!" << std::endl;
         }
         else
-            throw;
+            std::cout << "Could not parse line!" << std::endl;
     }
 
     config.close();
@@ -166,7 +171,7 @@ Customer &WareHouse::getCustomer(int customerId) const
         if (customer->getId() == customerId)
             return *customer;
 
-    return nullCustomer;
+    return *nullCustomer;
 }
 
 Volunteer &WareHouse::getVolunteer(int volunteerId) const
@@ -175,7 +180,7 @@ Volunteer &WareHouse::getVolunteer(int volunteerId) const
         if (volunteer->getId() == volunteerId)
             return *volunteer;
 
-    return nullCollector;
+    return *nullCollector;
 }
 
 Order &WareHouse::getOrder(int orderId) const
@@ -192,7 +197,7 @@ Order &WareHouse::getOrder(int orderId) const
         if (order->getId() == orderId)
             return *order;
 
-    return nullOrder;
+    return *nullOrder;
 }
 
 Order *WareHouse::getOrderPointer(int orderId) const
@@ -209,11 +214,11 @@ Order *WareHouse::getOrderPointer(int orderId) const
         if (order->getId() == orderId)
             return order;
 
-    return &nullOrder;
+    return nullOrder;
 }
 
 template <typename T>
-void eraseElement(std::vector<T> vec, T element)
+void eraseElement(std::vector<T> &vec, const T &element)
 {
     auto it = std::find(vec.begin(), vec.end(), element);
     if (it != vec.end())
@@ -227,38 +232,42 @@ void WareHouse::simulateStep()
     Order **orderArray = new Order *[n];
 
     for (int i = 0; i < n; i++)
-        orderArray[i] = pendingOrders[i];
-
-    for (int i = 0; i < n; i++)
     {
         Order *order = orderArray[i];
         if (order->getStatus() == OrderStatus::PENDING)
+        {
             for (Volunteer *volunteer : volunteers)
                 if (volunteer->getType() == VolunteerType::COLLECTOR)
                     if (volunteer->canTakeOrder(*order))
                     {
                         volunteer->acceptOrder(*order);
                         order->setStatus(OrderStatus::COLLECTING);
+                        order->setCollectorId(volunteer->getId());
                         inProcessOrders.push_back(order);
                         eraseElement(pendingOrders, order);
                         break;
                     }
-                    else if (order->getStatus() == OrderStatus::COLLECTING)
-                        for (Volunteer *volunteer : volunteers)
-                            if (volunteer->getType() == VolunteerType::DRIVER)
-                                if (volunteer->canTakeOrder(*order))
-                                {
-                                    volunteer->acceptOrder(*order);
-                                    order->setStatus(OrderStatus::DELIVERING);
-                                    inProcessOrders.push_back(order);
-                                    eraseElement(pendingOrders, order);
-                                    break;
-                                }
-                                else
-                                {
-                                    std::cout << "Order of illegal type in pendingOrders //WH214 STUPID" << std::endl;
-                                    throw;
-                                }
+        }
+        else if (order->getStatus() == OrderStatus::COLLECTING)
+        {
+            for (Volunteer *volunteer : volunteers)
+                if (volunteer->getType() == VolunteerType::DRIVER)
+                    if (volunteer->canTakeOrder(*order))
+                    {
+                        volunteer->acceptOrder(*order);
+                        order->setStatus(OrderStatus::DELIVERING);
+                        order->setDriverId(volunteer->getId());
+                        inProcessOrders.push_back(order);
+                        eraseElement(pendingOrders, order);
+                        break;
+                    }
+        }
+        else
+        {
+            std::cout << "Order of illegal type in pendingOrders //WH214" << std::endl;
+            std::cout << order->toString();
+            throw;
+        }
     }
 
     // step 2
@@ -287,7 +296,9 @@ void WareHouse::simulateStep()
 
             else
             {
-                std::cout << "Order of illegal type in inProcessOrders //WH254 STUPID" << std::endl;
+                std::cout << order->toString() << std::endl;
+                std::cout << volunteer->toString() << std::endl;
+                std::cout << "Order of illegal type in inProcessOrders //WH254" << std::endl;
                 throw;
             }
         }
@@ -309,8 +320,8 @@ void WareHouse::simulateStep()
         }
     }
 
-    delete []orderArray;
-    delete []volArray;
+    delete[] orderArray;
+    delete[] volArray;
 }
 
 const vector<BaseAction *> &WareHouse::getActions() const
@@ -362,9 +373,16 @@ WareHouse::~WareHouse()
 
     for (Customer *customer : customers)
         delete customer;
+
+    delete nullCustomer;
+    delete nullCollector;
+    delete nullDriver;
+    delete nullAction;
+    delete nullOrder;
 }
 
-WareHouse &WareHouse::operator=(const WareHouse &other){
+WareHouse &WareHouse::operator=(const WareHouse &other)
+{
     if (this != &other)
     {
 
@@ -410,7 +428,6 @@ WareHouse &WareHouse::operator=(const WareHouse &other){
         this->orderCounter = other.orderCounter;
         this->volunteerCounter = other.volunteerCounter;
     }
-
 
     return *this;
 }
@@ -440,8 +457,8 @@ WareHouse *WareHouse::clone() const
     return cloned;
 }
 
-
-WareHouse &WareHouse::operator=(WareHouse&& other){
+WareHouse &WareHouse::operator=(WareHouse &&other)
+{
     if (this != &other)
     {
 
@@ -488,6 +505,158 @@ WareHouse &WareHouse::operator=(WareHouse&& other){
         this->volunteerCounter = other.volunteerCounter;
     }
 
-
     return *this;
+}
+
+// HELPER FUNCTIONS
+
+BaseAction *WareHouse::parse(std::string &input)
+{
+    std::vector<std::string> args = argLineBreaker(input);
+
+    if (args.size() == 0)
+    {
+        helpPrinter();
+        return this->nullAction;
+    }
+
+    BaseAction *action;
+    if (args[0] == "step")
+    {
+        if (args.size() != 2)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new SimulateStep(stoi(args[1]));
+        // TODO this assumes we are given an int and a valid one, also true for all other actions here pretty much
+        // should we check validity of values?
+    }
+    else if (args[0] == "order")
+    {
+
+        if (args.size() != 2)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new AddOrder(stoi(args[1]));
+    }
+    else if (args[0] == "customer")
+    {
+        if (args.size() != 5)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new AddCustomer(args[1], args[2], stoi(args[3]), stoi(args[4]));
+    }
+    else if (args[0] == "orderStatus")
+    {
+        if (args.size() != 2)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new PrintOrderStatus(stoi(args[1]));
+    }
+    else if (args[0] == "customerStatus")
+    {
+        if (args.size() != 2)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new PrintCustomerStatus(stoi(args[1]));
+    }
+    else if (args[0] == "volunteerStatus")
+    {
+        if (args.size() != 2)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new PrintVolunteerStatus(stoi(args[1]));
+    }
+    else if (args[0] == "log")
+    {
+        if (args.size() != 1)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new PrintActionsLog();
+    }
+    else if (args[0] == "close")
+    {
+        if (args.size() != 1)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new Close();
+    }
+    else if (args[0] == "backup")
+    {
+        if (args.size() != 1)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new BackupWareHouse();
+    }
+    else if (args[0] == "restore")
+    {
+        if (args.size() != 1)
+        {
+            helpPrinter();
+            return nullAction;
+        }
+
+        action = new RestoreWareHouse();
+    }
+    else
+    {
+        helpPrinter();
+        return nullAction;
+    }
+    // There is no way to add volunteers, this action does not exist in the instructions for some reason
+    return action;
+}
+
+void WareHouse::helpPrinter()
+{
+    std::cout << "USAGE:\n\nstep (int)step_number\norder (int)ordering_customer\ncustomer (string)customer_name (soldier/civilian)customer_type (int)distance (int)max_orders\norderStatus (int)order_id\ncustomerStatus (int)customer_id\nvolunteerStatus (int)volunteer_id\nlog\nclose\nbackup\nrestore" << std::endl;
+}
+
+vector<std::string> WareHouse::argLineBreaker(std::string line, bool ignoreComments)
+{
+    std::vector<std::string> args;
+
+    std::string word;
+    for (char c : line)
+    {
+        if (ignoreComments && c == '#')
+            break;
+        else if (c != ' ')
+            word += c;
+        else if (!word.empty())
+        {
+            args.push_back(word);
+            word.clear();
+        }
+    }
+    if (!word.empty())
+        args.push_back(word);
+
+    return args;
 }

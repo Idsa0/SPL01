@@ -14,7 +14,7 @@ enum class OrderStatus {
 
 #define NO_VOLUNTEER -1
 
-class Order {
+class Order { 
 
     public:
         Order(int id, int customerId, int distance);
@@ -29,7 +29,7 @@ class Order {
         const string toString() const;
         const int getDistance() const; // we added this
         const string toStringCompact() const;// we added this
-        const string statusToString() const;
+        const string statusToString() const; // status getter but as a string
         Order *clone() const;
 
     private:
@@ -42,4 +42,4 @@ class Order {
         int driverId; //Initialized to NO_VOLUNTEER if no driver has been assigned yet
 };
 
-static Order nullOrder = Order(-1,-1,-1);
+

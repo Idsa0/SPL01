@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
-BaseAction::BaseAction() : errorMsg(), status(ActionStatus::ERROR), isNull(false) {}
+BaseAction::BaseAction() : isNull(false), errorMsg(), status(ActionStatus::ERROR)  {}
 
 ActionStatus BaseAction::getStatus() const
 {
@@ -43,6 +43,7 @@ SimulateStep::SimulateStep(int numOfSteps) : BaseAction(), numOfSteps(numOfSteps
 
 void SimulateStep::act(WareHouse &wareHouse)
 {
+    wareHouse.addAction(this);
     for (int i = 0; i < numOfSteps; i++)
         wareHouse.simulateStep();
 
@@ -60,11 +61,7 @@ std::string SimulateStep::toString() const
 
 SimulateStep *SimulateStep::clone() const
 {
-    SimulateStep *cloned = new SimulateStep(numOfSteps);
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-    return cloned;
+    return new SimulateStep(*this);
 
     // TODO clone methods are highly likely to cause bugs, putting this only here
 }
@@ -77,6 +74,7 @@ AddOrder::AddOrder(int id) : BaseAction(), customerId(id)
 
 void AddOrder::act(WareHouse &wareHouse)
 {
+    wareHouse.addAction(this);
     Customer &customer = wareHouse.getCustomer(customerId);
     if (customer.getId() == -1)
     {
@@ -110,12 +108,7 @@ string AddOrder::toString() const
 
 AddOrder *AddOrder::clone() const
 {
-    AddOrder *cloned = new AddOrder(customerId);
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new AddOrder(*this);
 }
 
 // helper function I -> string to CustomerType enum
@@ -140,6 +133,7 @@ AddCustomer::AddCustomer(const string &customerName, const string &customerType,
 
 void AddCustomer::act(WareHouse &wareHouse)
 {
+    wareHouse.addAction(this);
     Customer *customer;
     switch (customerType)
     {
@@ -158,13 +152,7 @@ void AddCustomer::act(WareHouse &wareHouse)
 
 AddCustomer *AddCustomer::clone() const
 {
-    AddCustomer *cloned = new AddCustomer(customerName, CustomerTypeToString(this->customerType), distance, maxOrders);
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
-
+    return new AddCustomer(*this);
     // TODO all clones are memory leaks until proven otherwise :(
 }
 
@@ -182,6 +170,7 @@ PrintOrderStatus::PrintOrderStatus(int id) : BaseAction(), orderId(id)
 
 void PrintOrderStatus::act(WareHouse &wareHouse)
 {
+    wareHouse.addAction(this);
     Order &order = wareHouse.getOrder(orderId);
     if (order.getId() == -1)
     {
@@ -195,12 +184,7 @@ void PrintOrderStatus::act(WareHouse &wareHouse)
 
 PrintOrderStatus *PrintOrderStatus::clone() const
 {
-    PrintOrderStatus *cloned = new PrintOrderStatus(orderId);
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new PrintOrderStatus(*this);
 }
 
 string PrintOrderStatus::toString() const
@@ -217,6 +201,7 @@ PrintCustomerStatus::PrintCustomerStatus(int customerId) : BaseAction(), custome
 
 void PrintCustomerStatus::act(WareHouse &wareHouse)
 {
+    wareHouse.addAction(this);
     Customer &customer = wareHouse.getCustomer(customerId);
     if (customer.getId() == -1)
     {
@@ -238,12 +223,7 @@ void PrintCustomerStatus::act(WareHouse &wareHouse)
 
 PrintCustomerStatus *PrintCustomerStatus::clone() const
 {
-    PrintCustomerStatus *cloned = new PrintCustomerStatus(customerId);
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new PrintCustomerStatus(*this);
 }
 
 string PrintCustomerStatus::toString() const
@@ -258,6 +238,7 @@ PrintVolunteerStatus::PrintVolunteerStatus(int id) : BaseAction(), volunteerId(i
 
 void PrintVolunteerStatus::act(WareHouse &wareHouse)
 {
+    wareHouse.addAction(this);
     Volunteer &vol = wareHouse.getVolunteer(volunteerId);
     if (vol.getId() == -1)
     {
@@ -270,12 +251,7 @@ void PrintVolunteerStatus::act(WareHouse &wareHouse)
 
 PrintVolunteerStatus *PrintVolunteerStatus::clone() const
 {
-    PrintVolunteerStatus *cloned = new PrintVolunteerStatus(volunteerId);
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new PrintVolunteerStatus(*this);
 }
 
 string PrintVolunteerStatus::toString() const
@@ -295,16 +271,12 @@ void PrintActionsLog::act(WareHouse &wareHouse)
         std::cout << action->toString() << std::endl;
 
     complete();
+    wareHouse.addAction(this);
 }
 
 PrintActionsLog *PrintActionsLog::clone() const
 {
-    PrintActionsLog *cloned = new PrintActionsLog();
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new PrintActionsLog(*this);
 }
 
 string PrintActionsLog::toString() const
@@ -318,6 +290,7 @@ Close::Close() : BaseAction() {}
 
 void Close::act(WareHouse &wareHouse)
 {
+    wareHouse.addAction(this);
     int max = wareHouse.getNewOrderId();
     for (int i = 0; i < max; i++)
         std::cout << wareHouse.getOrder(i).toStringCompact() << std::endl;
@@ -328,12 +301,7 @@ void Close::act(WareHouse &wareHouse)
 
 Close *Close::clone() const
 {
-    Close *cloned = new Close();
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new Close(*this);
 }
 
 string Close::toString() const
@@ -352,18 +320,15 @@ void BackupWareHouse::act(WareHouse &wareHouse)
         delete backup;
 
     backup = wareHouse.clone();
+    
     complete();
+    wareHouse.addAction(this);
 }
 
 BackupWareHouse *BackupWareHouse::clone() const
 
 {
-    BackupWareHouse *cloned = new BackupWareHouse();
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new BackupWareHouse(*this);
 }
 
 string BackupWareHouse::toString() const
@@ -386,18 +351,14 @@ void RestoreWareHouse::act(WareHouse &wareHouse)
     }
     wareHouse = *backup;
 
+    wareHouse.addAction(this);
     complete();
 
 }
 
 RestoreWareHouse *RestoreWareHouse::clone() const
 {
-    RestoreWareHouse *cloned = new RestoreWareHouse();
-    cloned->setErrorMsg(this->getErrorMsg());
-    if (this->getStatus() == ActionStatus::COMPLETED)
-        cloned->complete();
-
-    return cloned;
+    return new RestoreWareHouse(*this);
 }
 
 string RestoreWareHouse::toString() const

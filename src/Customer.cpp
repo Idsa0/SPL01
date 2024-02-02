@@ -50,25 +50,14 @@ SoldierCustomer::SoldierCustomer(int id, const string &name, int locationDistanc
 
 SoldierCustomer *SoldierCustomer::clone() const
 {
-    // TODO should we make a cloned string?
-    SoldierCustomer *cloned = new SoldierCustomer(getId(), getName(), getCustomerDistance(), getMaxOrders());
-    vector<int> v = getOrdersIds();
-    for (int x : v)
-        cloned->addOrder(x);
-
-    return cloned;
+    return new SoldierCustomer(*this);
 }
 
 CivilianCustomer::CivilianCustomer(int id, const string &name, int locationDistance, int maxOrders) : Customer(id, name, locationDistance, maxOrders) {}
 
 CivilianCustomer *CivilianCustomer::clone() const
 {
-    CivilianCustomer *cloned = new CivilianCustomer(getId(), getName(), getCustomerDistance(), getMaxOrders());
-    vector<int> v = getOrdersIds();
-    for (int x : v)
-        cloned->addOrder(x);
-
-    return cloned;
+    return new CivilianCustomer(*this);
 }
 
 string CivilianCustomer::toString() const {

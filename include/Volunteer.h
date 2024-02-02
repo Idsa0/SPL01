@@ -134,5 +134,4 @@ private:
     int ordersLeft;      // The number of orders the volunteer can still take
 };
 
-static CollectorVolunteer nullCollector = CollectorVolunteer(-1, "nobody", -1);
-static DriverVolunteer nullDriver = DriverVolunteer(-1, "nobody", -1, -1);
+

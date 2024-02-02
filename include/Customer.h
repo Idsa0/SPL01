@@ -49,4 +49,4 @@ class CivilianCustomer: public Customer {
         
 };
 
-static CivilianCustomer nullCustomer = CivilianCustomer(-1,"nobody",-1,-1);
+

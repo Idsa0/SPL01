@@ -10,8 +10,9 @@
 
 class BaseAction;
 class Volunteer;
-
+class AddOrder;
 // Warehouse responsible for Volunteers, Customers Actions, and Orders.
+
 
 
 class WareHouse {
@@ -42,7 +43,13 @@ class WareHouse {
         WareHouse *clone() const;
         
         WareHouse &operator=(const WareHouse &other);
-        WareHouse &operator=(WareHouse&& other);
+        WareHouse &operator=(WareHouse&& other);  
+
+        CivilianCustomer *nullCustomer;  
+        CollectorVolunteer *nullCollector;
+        DriverVolunteer *nullDriver;
+        BaseAction *nullAction;
+        Order *nullOrder;
 
     private:
         bool isOpen;
@@ -56,4 +63,12 @@ class WareHouse {
         int volunteerCounter; //For assigning unique volunteer IDs
         int orderCounter; // we added this
         void buildFromConfigurationFile(const std::string &path); // we added this
+
+
+        // some helper functions. Not static because they need access to nullAction.
+        BaseAction *parse(std::string &input);
+		void helpPrinter();
+        vector<std::string> argLineBreaker(std::string line, bool ignoreComments = false);
 };
+
+

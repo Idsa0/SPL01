@@ -1,4 +1,5 @@
 #include "Order.h"
+#include <iostream>
 
 Order::Order(int id, int customerId, int distance) : id(id), customerId(customerId),
                                                      distance(distance), status(OrderStatus::PENDING), collectorId(NO_VOLUNTEER), driverId(NO_VOLUNTEER) {}
@@ -54,12 +55,16 @@ const string Order::statusToString() const
         return "PENDING";
 
     case OrderStatus::DELIVERING:
-        return "DELIVERING";
+        return "DELIVERI    NG";
 
     case OrderStatus::COMPLETED:
         return "COMPLETED";
-    }
+
+    default:
+        return "PENDING";
+    }    
 }
+
 const string Order::toString() const
 {
     string col = (collectorId == -1) ? "None" : std::to_string(collectorId);
@@ -89,9 +94,5 @@ const int Order::getDistance() const
 
 Order *Order::clone() const
 {
-    Order *order = new Order(id, customerId, distance);
-    order->setStatus(this->status);
-    order->collectorId = this->collectorId;
-    order->driverId = this->driverId;
-    return order;
+    return new Order(*this);
 }

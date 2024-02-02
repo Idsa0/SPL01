@@ -21,19 +21,19 @@ class BaseAction
 {
 public:
     BaseAction();
-    ActionStatus getStatus() const;
-    virtual void act(WareHouse &wareHouse) = 0;
+    ActionStatus getStatus() const; 
+    virtual void act(WareHouse &wareHouse) = 0; // logic of the operation is contained here
     virtual string toString() const = 0;
-    virtual BaseAction *clone() const = 0;
-    string actionStatusString() const;
+    virtual BaseAction *clone() const = 0; // deep copy
+    string actionStatusString() const; // actionStatus getter as a string.
 	bool isNull; // we added this. 
-    
+    virtual ~BaseAction() = default;
 	
 protected:
-    void complete();
-    void error(string errorMsg);
+    void complete(); // change internal state to a completed order.
+    void error(string errorMsg); 
     string getErrorMsg() const;
-    void setErrorMsg(string errorMsg); // we added this
+    void setErrorMsg(string errorMsg); // like error() but without an error print.
 
 private:
     
@@ -160,4 +160,4 @@ public:
 private:
 };
 
-static AddOrder nullAction = AddOrder(-1);
+

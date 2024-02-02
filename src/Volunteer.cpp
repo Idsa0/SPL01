@@ -1,7 +1,7 @@
 #include "Volunteer.h"
 #include <iostream>
 
-Volunteer::Volunteer(int id, const string &name) : id(id), name(name), completedOrderId(NO_ORDER), activeOrderId(NO_ORDER) {}
+Volunteer::Volunteer(int id, const string &name) :  type(VolunteerType::COLLECTOR), completedOrderId(NO_ORDER), activeOrderId(NO_ORDER),id(id), name(name) {}
 
 int Volunteer::getId() const
 {
@@ -46,20 +46,13 @@ CollectorVolunteer::CollectorVolunteer(int id, const string &name, int coolDown)
 
 CollectorVolunteer *CollectorVolunteer::clone() const
 {
-    // TODO should we make a cloned string?
-    CollectorVolunteer *cloned = new CollectorVolunteer(getId(), getName(), coolDown);
-    cloned->activeOrderId = this->activeOrderId;
-    cloned->completedOrderId = this->completedOrderId;
-    cloned->timeLeft = this->timeLeft;
-
-    return cloned;
+    return new CollectorVolunteer(*this);
 }
 
 void CollectorVolunteer::step()
 {
-    if (isBusy())
-        if (decreaseCoolDown())
-            finishOrder();
+    if (isBusy() && decreaseCoolDown())
+        finishOrder();
 }
 
 int CollectorVolunteer::getCoolDown() const
@@ -125,13 +118,7 @@ LimitedCollectorVolunteer::LimitedCollectorVolunteer(int id, const string &name,
 
 LimitedCollectorVolunteer *LimitedCollectorVolunteer::clone() const
 {
-    LimitedCollectorVolunteer *cloned = new LimitedCollectorVolunteer(getId(), getName(), getCoolDown(), maxOrders);
-    cloned->setTimeLeft(this->getTimeLeft());
-    cloned->ordersLeft = this->ordersLeft;
-    cloned->completedOrderId = this->getCompletedOrderId();
-    cloned->activeOrderId = this->getActiveOrderId();
-
-    return cloned;
+    return new LimitedCollectorVolunteer(*this);
 }
 
 bool LimitedCollectorVolunteer::hasOrdersLeft() const
@@ -184,12 +171,7 @@ DriverVolunteer::DriverVolunteer(int id, const string &name, int maxDistance, in
 
 DriverVolunteer *DriverVolunteer::clone() const
 {
-    DriverVolunteer *cloned = new DriverVolunteer(getId(), getName(), maxDistance, distancePerStep);
-    cloned->distanceLeft = this->distanceLeft;
-    cloned->activeOrderId = this->activeOrderId;
-    cloned->completedOrderId = this->completedOrderId;
-
-    return cloned;
+    return new DriverVolunteer(*this);
 }
 
 int DriverVolunteer::getDistanceLeft() const
@@ -238,9 +220,8 @@ void DriverVolunteer::acceptOrder(const Order &order)
 
 void DriverVolunteer::step()
 {
-    if (isBusy())
-        if (decreaseDistanceLeft())
-            finishOrder();
+    if (isBusy() && decreaseDistanceLeft())
+        finishOrder();
 } // Decrease distanceLeft by distancePerStep
 
 string DriverVolunteer::toString() const
@@ -265,14 +246,8 @@ LimitedDriverVolunteer::LimitedDriverVolunteer(int id, const string &name, int m
 
 LimitedDriverVolunteer *LimitedDriverVolunteer::clone() const
 {
-    LimitedDriverVolunteer *cloned = new LimitedDriverVolunteer(getId(), getName(), getMaxDistance(), getDistancePerStep(), maxOrders);
-
-    cloned->ordersLeft = this->ordersLeft;
-    cloned->completedOrderId = this->getCompletedOrderId();
-    cloned->activeOrderId = this->getActiveOrderId();
-    cloned->setDistanceLeft(this->getDistanceLeft());
-
-    return cloned;
+    
+    return new LimitedDriverVolunteer(*this);
 }
 
 void LimitedDriverVolunteer::step()
