@@ -14,9 +14,7 @@ WareHouse::WareHouse() : nullCustomer(new CivilianCustomer(-1, "nobody", -1, -1)
                          isOpen{false}, actionsLog(vector<BaseAction *>{}), volunteers(vector<Volunteer *>{}), pendingOrders(vector<Order *>{}), inProcessOrders(vector<Order *>{}), completedOrders(vector<Order *>{}), customers(vector<Customer *>{}),
                          customerCounter{0}, volunteerCounter{0}, orderCounter{0} {}
 
-WareHouse::WareHouse(const WareHouse &other) : nullCustomer(new CivilianCustomer(-1, "nobody", -1, -1)), nullCollector(new CollectorVolunteer(-1, "nobody", -1)), nullDriver(new DriverVolunteer(-1, "nobody", -1, -1)), nullAction(new AddOrder(-1)), nullOrder(new Order(-1, -1, -1)),
-                                               isOpen{other.isOpen}, actionsLog(vector<BaseAction *>{}), volunteers(vector<Volunteer *>{}), pendingOrders(vector<Order *>{}), inProcessOrders(vector<Order *>{}), completedOrders(vector<Order *>{}), customers(vector<Customer *>{}),
-                                               customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
+WareHouse::WareHouse(const WareHouse &other) : WareHouse()
 {
     for (BaseAction *action : other.actionsLog)
         this->actionsLog.push_back(action->clone());
@@ -30,11 +28,14 @@ WareHouse::WareHouse(const WareHouse &other) : nullCustomer(new CivilianCustomer
         this->completedOrders.push_back(order->clone());
     for (Customer *customer : other.customers)
         this->customers.push_back(customer->clone());
+
+    this->isOpen = other.isOpen;
+    this->customerCounter = other.customerCounter;
+    this->volunteerCounter = other.volunteerCounter;
+    this->orderCounter = other.orderCounter;
 }
 
-WareHouse::WareHouse(WareHouse &&other) : nullCustomer(new CivilianCustomer(-1, "nobody", -1, -1)), nullCollector(new CollectorVolunteer(-1, "nobody", -1)), nullDriver(new DriverVolunteer(-1, "nobody", -1, -1)), nullAction(new AddOrder(-1)), nullOrder(new Order(-1, -1, -1)),
-                                          isOpen{other.isOpen}, actionsLog(vector<BaseAction *>{}), volunteers(vector<Volunteer *>{}), pendingOrders(vector<Order *>{}), inProcessOrders(vector<Order *>{}), completedOrders(vector<Order *>{}), customers(vector<Customer *>{}),
-                                          customerCounter{other.customerCounter}, volunteerCounter{other.volunteerCounter}, orderCounter{other.orderCounter}
+WareHouse::WareHouse(WareHouse &&other) : WareHouse()
 {
     for (BaseAction *action : other.actionsLog)
         this->actionsLog.push_back(action->clone());
@@ -48,6 +49,11 @@ WareHouse::WareHouse(WareHouse &&other) : nullCustomer(new CivilianCustomer(-1, 
         this->completedOrders.push_back(order->clone());
     for (Customer *customer : other.customers)
         this->customers.push_back(customer->clone());
+
+    this->isOpen = other.isOpen;
+    this->customerCounter = other.customerCounter;
+    this->volunteerCounter = other.volunteerCounter;
+    this->orderCounter = other.orderCounter;
 }
 
 void WareHouse::start()
@@ -434,34 +440,35 @@ WareHouse &WareHouse::operator=(const WareHouse &other)
 
 WareHouse *WareHouse::clone() const
 {
-    WareHouse *cloned = new WareHouse();
+    // WareHouse *cloned = new WareHouse();
 
-    cloned->isOpen = this->isOpen;
-    for (BaseAction *action : actionsLog)
-        cloned->actionsLog.push_back(action->clone());
-    for (Volunteer *volunteer : volunteers)
-        cloned->volunteers.push_back(volunteer->clone());
-    for (Order *order : pendingOrders)
-        cloned->pendingOrders.push_back(order->clone());
-    for (Order *order : inProcessOrders)
-        cloned->inProcessOrders.push_back(order->clone());
-    for (Order *order : completedOrders)
-        cloned->completedOrders.push_back(order->clone());
-    for (Customer *customer : customers)
-        cloned->customers.push_back(customer->clone());
+    // cloned->isOpen = this->isOpen;
+    // for (BaseAction *action : actionsLog)
+    //     cloned->actionsLog.push_back(action->clone());
+    // for (Volunteer *volunteer : volunteers)
+    //     cloned->volunteers.push_back(volunteer->clone());
+    // for (Order *order : pendingOrders)
+    //     cloned->pendingOrders.push_back(order->clone());
+    // for (Order *order : inProcessOrders)
+    //     cloned->inProcessOrders.push_back(order->clone());
+    // for (Order *order : completedOrders)
+    //     cloned->completedOrders.push_back(order->clone());
+    // for (Customer *customer : customers)
+    //     cloned->customers.push_back(customer->clone());
 
-    cloned->customerCounter = this->customerCounter;
-    cloned->orderCounter = this->orderCounter;
-    cloned->volunteerCounter = this->volunteerCounter;
+    // cloned->customerCounter = this->customerCounter;
+    // cloned->orderCounter = this->orderCounter;
+    // cloned->volunteerCounter = this->volunteerCounter;
 
-    return cloned;
+    // return cloned;
+
+    return new WareHouse(*this);
 }
 
 WareHouse &WareHouse::operator=(WareHouse &&other)
 {
     if (this != &other)
     {
-
         for (BaseAction *action : actionsLog)
             delete action;
         actionsLog.clear();

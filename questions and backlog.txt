@@ -3,6 +3,7 @@ comments
 empty lines on some command outputs and some not? should have emptylines on all.
 ro5 move constructor in particular use the empty constructor clone() use std::move
 input validation
+do we change the counters in wh?
 
 
 tests:
