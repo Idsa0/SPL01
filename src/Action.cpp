@@ -44,11 +44,17 @@ SimulateStep::SimulateStep(int numOfSteps) : BaseAction(), numOfSteps(numOfSteps
 void SimulateStep::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
+
+    if (numOfSteps <= 0)
+    {
+        error("Number of steps must be positive!");
+        return;
+    }
+
     for (int i = 0; i < numOfSteps; i++)
         wareHouse.simulateStep();
 
     complete();
-    // TODO anything else?
 }
 
 std::string SimulateStep::toString() const
@@ -62,19 +68,20 @@ std::string SimulateStep::toString() const
 SimulateStep *SimulateStep::clone() const
 {
     return new SimulateStep(*this);
-
-    // TODO clone methods are highly likely to cause bugs, putting this only here
 }
 
-AddOrder::AddOrder(int id) : BaseAction(), customerId(id)
-{
-    if (customerId == -1)
-        isNull = true;
-}
+AddOrder::AddOrder(int id) : BaseAction(), customerId(id) {}
 
 void AddOrder::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
+
+    if (customerId < 0)
+    {
+        error("Customer ID must be positive");
+        return;
+    }
+
     Customer &customer = wareHouse.getCustomer(customerId);
     if (customer.getId() == -1)
     {
@@ -118,7 +125,10 @@ CustomerType stringToCustomerType(const string &ct)
     if (ct == "soldier")
         return CustomerType::Soldier;
 
-    return CustomerType::Civilian;
+    else if (ct == "civilian")
+        return CustomerType::Civilian;
+
+    return CustomerType::Other;
 }
 
 // helper function II -> CustomerType enum to string
@@ -127,7 +137,10 @@ string CustomerTypeToString(CustomerType ct)
     if (ct == CustomerType::Civilian)
         return "civilian";
 
-    return "soldier";
+    else if (ct == CustomerType::Soldier)
+        return "soldier";
+
+    return "other";
 }
 
 AddCustomer::AddCustomer(const string &customerName, const string &customerType, int distance, int maxOrders) : BaseAction(), customerName(customerName), customerType(stringToCustomerType(customerType)), distance(distance), maxOrders(maxOrders) {}
@@ -135,6 +148,25 @@ AddCustomer::AddCustomer(const string &customerName, const string &customerType,
 void AddCustomer::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
+
+    if (customerType == CustomerType::Other)
+    {
+        error("Invalid customer type");
+        return;
+    }
+
+    if (distance <= 0)
+    {
+        error("Distance must be positive");
+        return;
+    }
+
+    if (maxOrders <= 0)
+    {
+        error("Max orders must be positive");
+        return;
+    }
+
     Customer *customer;
     switch (customerType)
     {
@@ -145,6 +177,10 @@ void AddCustomer::act(WareHouse &wareHouse)
     case CustomerType::Soldier:
         customer = new SoldierCustomer(wareHouse.getNewCustomerId(), customerName, distance, maxOrders);
         break;
+
+    default:
+        // This should never happen
+        return;
     }
 
     wareHouse.addCustomer(customer);
@@ -154,7 +190,6 @@ void AddCustomer::act(WareHouse &wareHouse)
 AddCustomer *AddCustomer::clone() const
 {
     return new AddCustomer(*this);
-    // TODO all clones are memory leaks until proven otherwise :(
 }
 
 string AddCustomer::toString() const
@@ -170,6 +205,13 @@ PrintOrderStatus::PrintOrderStatus(int id) : BaseAction(), orderId(id) {}
 void PrintOrderStatus::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
+
+    if (orderId < 0)
+    {
+        error("Order ID must be non-negative");
+        return;
+    }
+
     Order &order = wareHouse.getOrder(orderId);
     if (order.getId() == -1)
     {
@@ -199,6 +241,13 @@ PrintCustomerStatus::PrintCustomerStatus(int customerId) : BaseAction(), custome
 void PrintCustomerStatus::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
+
+    if (customerId < 0)
+    {
+        error("Customer ID must be non-negative");
+        return;
+    }
+
     Customer &customer = wareHouse.getCustomer(customerId);
     if (customer.getId() == -1)
     {
@@ -236,6 +285,13 @@ PrintVolunteerStatus::PrintVolunteerStatus(int id) : BaseAction(), volunteerId(i
 void PrintVolunteerStatus::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
+
+    if (volunteerId < 0)
+    {
+        error("Volunteer ID must be non-negative");
+        return;
+    }
+
     Volunteer &vol = wareHouse.getVolunteer(volunteerId);
     if (vol.getId() == -1)
     {
@@ -363,4 +419,26 @@ string RestoreWareHouse::toString() const
     string name = "RestoreWareHouse";
     string s = actionStatusString();
     return name + " " + s;
+}
+
+NullAction::NullAction() : BaseAction()
+{
+    isNull = true;
+}
+
+void NullAction::act(WareHouse &wareHouse)
+{
+    wareHouse.addAction(this);
+    error("FATAL: NULL ACTION HAS BEEN ACTED ON!");
+    throw;
+}
+
+NullAction *NullAction::clone() const
+{
+    return new NullAction(*this);
+}
+
+string NullAction::toString() const
+{
+    return "";
 }

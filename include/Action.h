@@ -14,7 +14,8 @@ enum class ActionStatus
 enum class CustomerType
 {
     Soldier,
-    Civilian
+    Civilian,
+    Other
 };
 
 class BaseAction
@@ -160,4 +161,11 @@ public:
 private:
 };
 
-
+class NullAction : public BaseAction
+{
+public:
+    NullAction();
+    void act(WareHouse &wareHouse) override;
+    NullAction *clone() const override;
+    string toString() const override;
+};
