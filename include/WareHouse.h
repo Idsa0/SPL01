@@ -20,8 +20,8 @@ class WareHouse {
     public:
         WareHouse(); // we added this
         WareHouse(const string &configFilePath);
-        WareHouse(const WareHouse& other); // TODO we added this
-        WareHouse(WareHouse&& other); // TODO we added this
+        WareHouse(const WareHouse& other); // we added this
+        WareHouse(WareHouse&& other); // we added this
         void start();
         void addOrder(Order* order);
         void addAction(BaseAction* action);
@@ -38,7 +38,7 @@ class WareHouse {
         int getNewCustomerId();  // we added this
         int getNewVolunteerId(); // we added this
         int getNewOrderId(); // we added this
-        ~WareHouse(); // TODO rule of 3/5
+        ~WareHouse(); 
         
         WareHouse *clone() const;
         

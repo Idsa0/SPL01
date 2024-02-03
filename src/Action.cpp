@@ -347,7 +347,7 @@ void Close::act(WareHouse &wareHouse)
     int max = wareHouse.getNewOrderId();
     for (int i = 0; i < max; i++)
         std::cout << wareHouse.getOrder(i).toStringCompact() << std::endl;
-    // TODO is this the string we want?
+    
     wareHouse.close();
     complete();
 }
@@ -400,7 +400,7 @@ void RestoreWareHouse::act(WareHouse &wareHouse)
     if (backup == nullptr)
     {
         error("No Backup Available");
-        wareHouse.addAction(this); // TODO i added this here so it appears in the log
+        wareHouse.addAction(this);
         return;
     }
     wareHouse = *backup;
