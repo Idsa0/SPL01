@@ -271,7 +271,7 @@ void WareHouse::simulateStep()
         }
         else
         {
-            std::cout << "Order of illegal type in pendingOrders" << std::endl;
+            std::cout << "Order of illegal type in pendingOrders /WH " << __LINE__  << std::endl;
             std::cout << order->toString();
             throw;
         }
@@ -305,7 +305,7 @@ void WareHouse::simulateStep()
             {
                 std::cout << order->toString() << std::endl;
                 std::cout << volunteer->toString() << std::endl;
-                std::cout << "Order of illegal type in inProcessOrders" << std::endl;
+                std::cout << "Order of illegal type in inProcessOrders / WH " << __LINE__ << std::endl;
                 throw;
             }
         }
