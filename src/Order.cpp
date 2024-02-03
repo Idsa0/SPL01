@@ -62,7 +62,7 @@ const string Order::statusToString() const
 
     default:
         return "PENDING";
-    }    
+    }
 }
 
 const string Order::toString() const

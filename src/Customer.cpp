@@ -39,11 +39,12 @@ const vector<int> &Customer::getOrdersIds() const
 
 int Customer::addOrder(int orderId)
 {
-    if (!canMakeOrder()){
+    if (!canMakeOrder())
+    {
         return -1;
     }
     ordersId.push_back(orderId);
-    return 0; 
+    return 0;
 }
 
 SoldierCustomer::SoldierCustomer(int id, const string &name, int locationDistance, int maxOrders) : Customer(id, name, locationDistance, maxOrders) {}
@@ -60,10 +61,12 @@ CivilianCustomer *CivilianCustomer::clone() const
     return new CivilianCustomer(*this);
 }
 
-string CivilianCustomer::toString() const {
+string CivilianCustomer::toString() const
+{
     return "CivilianCustomer";
 }
 
-string SoldierCustomer::toString() const {
+string SoldierCustomer::toString() const
+{
     return "SoldierCustomer";
 }

@@ -67,13 +67,11 @@ void WareHouse::start()
 
 void WareHouse::buildFromConfigurationFile(const std::string &path)
 {
-    if (path == "adminPass") // TODO: quick method to bypass config. to remove.
-        return;
     std::ifstream config(path);
     if (!config.is_open())
     {
         std::cout << "could not open file!" << std::endl;
-        throw;
+        exit(-1);
     }
 
     std::string line;
@@ -90,7 +88,7 @@ void WareHouse::buildFromConfigurationFile(const std::string &path)
         if (args[0] == "customer")
         {
             if (args.size() != 5)
-                std::cout << "Could not parse line!" << std::endl;
+                std::cout << "Could not parse: " << line << std::endl;
 
             Customer *customer;
             if (args[2] == "civilian")
@@ -103,43 +101,43 @@ void WareHouse::buildFromConfigurationFile(const std::string &path)
         else if (args[0] == "volunteer")
         {
             if (args.size() <= 3)
-                std::cout << "Could not parse line!" << std::endl;
+                std::cout << "Could not parse: " << line << std::endl;
 
             if (args[2] == "collector")
             {
                 if (args.size() != 4)
-                    std::cout << "Could not parse line!" << std::endl;
+                    std::cout << "Could not parse: " << line << std::endl;
                 CollectorVolunteer *colvol = new CollectorVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]));
                 addVolunteer(colvol);
             }
             else if (args[2] == "limited_collector")
             {
                 if (args.size() != 5)
-                    std::cout << "Could not parse line!" << std::endl;
+                    std::cout << "Could not parse: " << line << std::endl;
                 LimitedCollectorVolunteer *limcolvol = new LimitedCollectorVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]), std::stoi(args[4]));
                 addVolunteer(limcolvol);
             }
             else if (args[2] == "driver")
             {
                 if (args.size() != 5)
-                    std::cout << "Could not parse line!" << std::endl;
+                    std::cout << "Could not parse: " << line << std::endl;
                 DriverVolunteer *drivol = new DriverVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]), std::stoi(args[4]));
                 addVolunteer(drivol);
             }
             else if (args[2] == "limited_driver")
             {
                 if (args.size() != 6)
-                    std::cout << "Could not parse line!" << std::endl;
+                    std::cout << "Could not parse: " << line << std::endl;
                 LimitedDriverVolunteer *drivol = new LimitedDriverVolunteer(getNewVolunteerId(), args[1], std::stoi(args[3]),
                                                                             std::stoi(args[4]), std::stoi(args[5]));
 
                 addVolunteer(drivol);
             }
             else
-                std::cout << "Could not parse line!" << std::endl;
+                std::cout << "Could not parse: " << line << std::endl;
         }
         else
-            std::cout << "Could not parse line!" << std::endl;
+            std::cout << "Could not parse: " << line << std::endl;
     }
 
     config.close();
@@ -267,7 +265,7 @@ void WareHouse::simulateStep()
         }
         else
         {
-            std::cout << "Order of illegal type in pendingOrders //WH214" << std::endl;
+            std::cout << "Order of illegal type in pendingOrders" << std::endl;
             std::cout << order->toString();
             throw;
         }
@@ -301,7 +299,7 @@ void WareHouse::simulateStep()
             {
                 std::cout << order->toString() << std::endl;
                 std::cout << volunteer->toString() << std::endl;
-                std::cout << "Order of illegal type in inProcessOrders //WH254" << std::endl;
+                std::cout << "Order of illegal type in inProcessOrders" << std::endl;
                 throw;
             }
         }
@@ -388,7 +386,6 @@ WareHouse &WareHouse::operator=(const WareHouse &other)
 {
     if (this != &other)
     {
-
         for (BaseAction *action : actionsLog)
             delete action;
         actionsLog.clear();
@@ -533,8 +530,6 @@ BaseAction *WareHouse::parse(std::string &input)
         }
 
         action = new SimulateStep(stoi(args[1]));
-        // TODO this assumes we are given an int and a valid one, also true for all other actions here pretty much
-        // should we check validity of values?
     }
     else if (args[0] == "order")
     {
@@ -632,7 +627,7 @@ BaseAction *WareHouse::parse(std::string &input)
         helpPrinter();
         return nullAction;
     }
-    // There is no way to add volunteers, this action does not exist in the instructions for some reason
+
     return action;
 }
 

@@ -1,7 +1,7 @@
 #include "Volunteer.h"
 #include <iostream>
 
-Volunteer::Volunteer(int id, const string &name) :  type(VolunteerType::COLLECTOR), completedOrderId(NO_ORDER), activeOrderId(NO_ORDER),id(id), name(name) {}
+Volunteer::Volunteer(int id, const string &name) : type(VolunteerType::COLLECTOR), completedOrderId(NO_ORDER), activeOrderId(NO_ORDER), id(id), name(name) {}
 
 int Volunteer::getId() const
 {
@@ -246,7 +246,7 @@ LimitedDriverVolunteer::LimitedDriverVolunteer(int id, const string &name, int m
 
 LimitedDriverVolunteer *LimitedDriverVolunteer::clone() const
 {
-    
+
     return new LimitedDriverVolunteer(*this);
 }
 

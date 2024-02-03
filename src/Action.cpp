@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
-BaseAction::BaseAction() : isNull(false), errorMsg(), status(ActionStatus::ERROR)  {}
+BaseAction::BaseAction() : isNull(false), errorMsg(), status(ActionStatus::ERROR) {}
 
 ActionStatus BaseAction::getStatus() const
 {
@@ -93,7 +93,8 @@ void AddOrder::act(WareHouse &wareHouse)
     wareHouse.addOrder(order);
     if (customer.addOrder(order->getId()) == -1)
     {
-        std::cout << "FATAL @ AddOrder::Act" << std::endl;
+        error("FATAL @ AddOrder::Act");
+        return;
     }
     complete();
 }
@@ -316,7 +317,7 @@ void BackupWareHouse::act(WareHouse &wareHouse)
         delete backup;
 
     backup = wareHouse.clone();
-    
+
     complete();
     wareHouse.addAction(this);
 }
@@ -338,7 +339,7 @@ RestoreWareHouse::RestoreWareHouse() : BaseAction() {}
 
 void RestoreWareHouse::act(WareHouse &wareHouse)
 {
-    extern WareHouse* backup;
+    extern WareHouse *backup;
 
     if (backup == nullptr)
     {
@@ -350,7 +351,6 @@ void RestoreWareHouse::act(WareHouse &wareHouse)
 
     wareHouse.addAction(this);
     complete();
-
 }
 
 RestoreWareHouse *RestoreWareHouse::clone() const
