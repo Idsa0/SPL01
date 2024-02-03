@@ -16,44 +16,12 @@ WareHouse::WareHouse() : nullCustomer(new CivilianCustomer(-1, "nobody", -1, -1)
 
 WareHouse::WareHouse(const WareHouse &other) : WareHouse()
 {
-    for (BaseAction *action : other.actionsLog)
-        this->actionsLog.push_back(action->clone());
-    for (Volunteer *volunteer : other.volunteers)
-        this->volunteers.push_back(volunteer->clone());
-    for (Order *order : other.pendingOrders)
-        this->pendingOrders.push_back(order->clone());
-    for (Order *order : other.inProcessOrders)
-        this->inProcessOrders.push_back(order->clone());
-    for (Order *order : other.completedOrders)
-        this->completedOrders.push_back(order->clone());
-    for (Customer *customer : other.customers)
-        this->customers.push_back(customer->clone());
-
-    this->isOpen = other.isOpen;
-    this->customerCounter = other.customerCounter;
-    this->volunteerCounter = other.volunteerCounter;
-    this->orderCounter = other.orderCounter;
+    copyResources(other);
 }
 
 WareHouse::WareHouse(WareHouse &&other) : WareHouse()
 {
-    for (BaseAction *action : other.actionsLog)
-        this->actionsLog.push_back(action->clone());
-    for (Volunteer *volunteer : other.volunteers)
-        this->volunteers.push_back(volunteer->clone());
-    for (Order *order : other.pendingOrders)
-        this->pendingOrders.push_back(order->clone());
-    for (Order *order : other.inProcessOrders)
-        this->inProcessOrders.push_back(order->clone());
-    for (Order *order : other.completedOrders)
-        this->completedOrders.push_back(order->clone());
-    for (Customer *customer : other.customers)
-        this->customers.push_back(customer->clone());
-
-    this->isOpen = other.isOpen;
-    this->customerCounter = other.customerCounter;
-    this->volunteerCounter = other.volunteerCounter;
-    this->orderCounter = other.orderCounter;
+    moveResources(std::move(other));
 }
 
 void WareHouse::start()
@@ -363,24 +331,8 @@ int WareHouse::getNewOrderId()
 
 WareHouse::~WareHouse()
 {
-    for (BaseAction *action : actionsLog)
-        delete action;
-
-    for (Volunteer *volunteer : volunteers)
-        delete volunteer;
-
-    for (Order *order : pendingOrders)
-        delete order;
-
-    for (Order *order : inProcessOrders)
-        delete order;
-
-    for (Order *order : completedOrders)
-        delete order;
-
-    for (Customer *customer : customers)
-        delete customer;
-
+    freeResources();
+    
     delete nullCustomer;
     delete nullCollector;
     delete nullDriver;
@@ -392,47 +344,8 @@ WareHouse &WareHouse::operator=(const WareHouse &other)
 {
     if (this != &other)
     {
-        for (BaseAction *action : actionsLog)
-            delete action;
-        actionsLog.clear();
-
-        for (Volunteer *volunteer : volunteers)
-            delete volunteer;
-        volunteers.clear();
-
-        for (Order *order : pendingOrders)
-            delete order;
-        pendingOrders.clear();
-
-        for (Order *order : inProcessOrders)
-            delete order;
-        inProcessOrders.clear();
-
-        for (Order *order : completedOrders)
-            delete order;
-        completedOrders.clear();
-
-        for (Customer *customer : customers)
-            delete customer;
-        customers.clear();
-
-        this->isOpen = other.isOpen;
-        for (BaseAction *action : other.actionsLog)
-            this->actionsLog.push_back(action->clone());
-        for (Volunteer *volunteer : other.volunteers)
-            this->volunteers.push_back(volunteer->clone());
-        for (Order *order : other.pendingOrders)
-            this->pendingOrders.push_back(order->clone());
-        for (Order *order : other.inProcessOrders)
-            this->inProcessOrders.push_back(order->clone());
-        for (Order *order : other.completedOrders)
-            this->completedOrders.push_back(order->clone());
-        for (Customer *customer : other.customers)
-            this->customers.push_back(customer->clone());
-
-        this->customerCounter = other.customerCounter;
-        this->orderCounter = other.orderCounter;
-        this->volunteerCounter = other.volunteerCounter;
+        freeResources();
+        copyResources(other);
     }
 
     return *this;
@@ -447,53 +360,80 @@ WareHouse &WareHouse::operator=(WareHouse &&other)
 {
     if (this != &other)
     {
-        for (BaseAction *action : actionsLog)
-            delete action;
-        actionsLog.clear();
+        freeResources();
 
-        for (Volunteer *volunteer : volunteers)
-            delete volunteer;
-        volunteers.clear();
-
-        for (Order *order : pendingOrders)
-            delete order;
-        pendingOrders.clear();
-
-        for (Order *order : inProcessOrders)
-            delete order;
-        inProcessOrders.clear();
-
-        for (Order *order : completedOrders)
-            delete order;
-        completedOrders.clear();
-
-        for (Customer *customer : customers)
-            delete customer;
-        customers.clear();
-
-        this->isOpen = other.isOpen;
-        for (BaseAction *action : other.actionsLog)
-            this->actionsLog.push_back(action->clone());
-        for (Volunteer *volunteer : other.volunteers)
-            this->volunteers.push_back(volunteer->clone());
-        for (Order *order : other.pendingOrders)
-            this->pendingOrders.push_back(order->clone());
-        for (Order *order : other.inProcessOrders)
-            this->inProcessOrders.push_back(order->clone());
-        for (Order *order : other.completedOrders)
-            this->completedOrders.push_back(order->clone());
-        for (Customer *customer : other.customers)
-            this->customers.push_back(customer->clone());
-
-        this->customerCounter = other.customerCounter;
-        this->orderCounter = other.orderCounter;
-        this->volunteerCounter = other.volunteerCounter;
+        moveResources(std::move(other));
     }
 
     return *this;
 }
 
 // HELPER FUNCTIONS
+
+void WareHouse::freeResources()
+{
+	for (BaseAction *action : actionsLog)
+		delete action;
+	actionsLog.clear();
+
+	for (Volunteer *volunteer : volunteers)
+		delete volunteer;
+	volunteers.clear();
+
+	for (Order *order : pendingOrders)
+		delete order;
+	pendingOrders.clear();
+
+	for (Order *order : inProcessOrders)
+		delete order;
+	inProcessOrders.clear();
+
+	for (Order *order : completedOrders)
+		delete order;
+	completedOrders.clear();
+
+	for (Customer *customer : customers)
+		delete customer;
+	customers.clear();	
+}
+
+// adds resources from other to this.
+void WareHouse::copyResources(const WareHouse &other)
+{
+	this->isOpen = other.isOpen;
+	for (BaseAction *action : other.actionsLog)
+		this->actionsLog.push_back(action->clone());
+	for (Volunteer *volunteer : other.volunteers)
+		this->volunteers.push_back(volunteer->clone());
+	for (Order *order : other.pendingOrders)
+		this->pendingOrders.push_back(order->clone());
+	for (Order *order : other.inProcessOrders)
+		this->inProcessOrders.push_back(order->clone());
+	for (Order *order : other.completedOrders)
+		this->completedOrders.push_back(order->clone());
+	for (Customer *customer : other.customers)
+		this->customers.push_back(customer->clone());
+
+	this->customerCounter = other.customerCounter;
+	this->orderCounter = other.orderCounter;
+	this->volunteerCounter = other.volunteerCounter;
+}
+
+// moves ("steals") resources from other.
+void WareHouse::moveResources(WareHouse &&other)
+{
+	this->isOpen = other.isOpen;
+	actionsLog = std::move(other.actionsLog);
+	volunteers = std::move(other.volunteers);
+	pendingOrders = std::move(other.pendingOrders);
+	inProcessOrders = std::move(other.inProcessOrders);
+	completedOrders = std::move(other.completedOrders);
+	customers = std::move(other.customers);
+
+	this->customerCounter = other.customerCounter;
+	this->orderCounter = other.orderCounter;
+	this->volunteerCounter = other.volunteerCounter;
+}
 
 BaseAction *WareHouse::parse(std::string &input)
 {

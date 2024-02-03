@@ -64,7 +64,11 @@ class WareHouse {
         int orderCounter; // we added this
         void buildFromConfigurationFile(const std::string &path); // we added this
 
-
+		
+		// helper functions for resources.
+		void freeResources();
+		void copyResources(const WareHouse &other);
+		void moveResources(WareHouse &&other);
         // some helper functions. Not static because they need access to nullAction.
         BaseAction *parse(std::string &input);
 		void helpPrinter();
