@@ -1,9 +1,9 @@
 all: build
 
-build: clean bin/run
+build: clean bin/warehouse
 
-bin/run: bin/Order.o bin/Customer.o bin/Volunteer.o bin/WareHouse.o bin/Action.o  bin/main.o
-	g++ -g -Wall -Weffc++ -std=c++11 -Iinclude -o bin/run bin/*
+bin/warehouse: bin/Order.o bin/Customer.o bin/Volunteer.o bin/WareHouse.o bin/Action.o bin/main.o
+	g++ -g -Wall -Weffc++ -std=c++11 -Iinclude -o bin/warehouse bin/*.o
 
 bin/main.o: src/main.cpp
 	g++ -g -Wall -Weffc++ -std=c++11 -c -Iinclude -o bin/main.o src/main.cpp
